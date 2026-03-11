@@ -576,21 +576,21 @@ def step_demographics():
     st.markdown('<p class="step-title">About You</p>', unsafe_allow_html=True)
     st.markdown('<p class="step-subtitle">Basic information to personalize your benchmarks and recommendations.</p>', unsafe_allow_html=True)
 
-    c1, c2 = st.columns(2)
-    with c1:
-        age = st.number_input("Your current age", 18, 80, ss("age"), step=1)
-        ss_set("age", age)
-        ret_age = st.number_input("Target retirement age", age + 1, 80,
-                                  max(age + 1, ss("ret_age")), step=1)
-        ss_set("ret_age", ret_age)
-    with c2:
-        sal = st.number_input("Annual gross salary ($, before taxes)", 0, 2_000_000,
-                              ss("salary"), step=1000, format="%d")
-        ss_set("salary", sal)
-        region = st.selectbox("Region (for cost-of-living context)",
-                              ["National Average", "Northeast", "Midwest", "South", "West"],
-                              index=["National Average","Northeast","Midwest","South","West"].index(ss("region")))
-        ss_set("region", region)
+    age = st.number_input("Your current age", 18, 80, ss("age"), step=1)
+    ss_set("age", age)
+
+    sal = st.number_input("Annual gross salary ($, before taxes)", 0, 2_000_000,
+                          ss("salary"), step=1000, format="%d")
+    ss_set("salary", sal)
+
+    ret_age = st.number_input("Target retirement age", age + 1, 80,
+                              max(age + 1, ss("ret_age")), step=1)
+    ss_set("ret_age", ret_age)
+
+    region = st.selectbox("Region",
+                          ["National Average", "Northeast", "Midwest", "South", "West"],
+                          index=["National Average","Northeast","Midwest","South","West"].index(ss("region")))
+    ss_set("region", region)
 
     yrs = ret_age - age
     mult = fidelity_multiple(age)
@@ -686,167 +686,107 @@ def step_cfpb():
     </p>
     """, unsafe_allow_html=True)
 
-    # Extra CSS for the instrument table layout
+    # Styled section headers via HTML, radio inputs via native Streamlit (reliable cross-platform)
     st.markdown("""
     <style>
-    .cfpb-section-header {
+    .cfpb-part-header {
         background: #3D1A5C;
         color: white;
         border-radius: 10px 10px 0 0;
-        padding: 0.9rem 1.2rem;
+        padding: 0.85rem 1.2rem;
         font-weight: 600;
         font-size: 0.95rem;
         margin-top: 1.5rem;
         margin-bottom: 0;
+        line-height: 1.4;
     }
-    .cfpb-col-headers {
-        display: grid;
-        align-items: center;
-        background: #EDE5F5;
-        padding: 0.6rem 1.2rem;
-        border-left: 1px solid #C4B8DE;
-        border-right: 1px solid #C4B8DE;
-        font-size: 0.78rem;
-        font-weight: 600;
-        color: #3D1A5C;
-        text-align: center;
-        gap: 6px;
-    }
-    .cfpb-col-headers-p1 { grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; }
-    .cfpb-col-headers-p2 { grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; }
-    .cfpb-col-headers span:first-child { text-align: left; }
-
-    .cfpb-row {
-        display: grid;
-        align-items: center;
-        padding: 0.75rem 1.2rem;
-        border-left: 1px solid #C4B8DE;
-        border-right: 1px solid #C4B8DE;
-        border-bottom: 1px solid #D4C9E8;
-        gap: 6px;
+    .cfpb-q-card {
         background: white;
-        font-size: 0.9rem;
+        border: 1px solid #D4C9E8;
+        border-top: none;
+        padding: 1rem 1.2rem 0.5rem 1.2rem;
+    }
+    .cfpb-q-card:last-of-type {
+        border-radius: 0 0 10px 10px;
+        margin-bottom: 0.5rem;
+    }
+    .cfpb-q-card:nth-child(even) { background: #FAF7F4; }
+    .cfpb-q-label {
+        font-size: 0.92rem;
         color: #1A0A2E;
+        font-weight: 500;
+        margin-bottom: 0.4rem;
+        line-height: 1.45;
     }
-    .cfpb-row-p1 { grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; }
-    .cfpb-row-p2 { grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; }
-    .cfpb-row:last-child { border-radius: 0 0 10px 10px; border-bottom: 1px solid #C4B8DE; }
-    .cfpb-row:nth-child(even) { background: #FAF7F4; }
-
-    /* Hide radio label, show only circle */
-    div[data-testid="stRadio"] > label { display: none; }
-    div[data-testid="stRadio"] > div {
-        display: flex;
-        justify-content: space-around;
-        gap: 0;
+    /* Make radio options display inline and compact */
+    div[data-testid="stRadio"] > div[role="radiogroup"] {
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        gap: 0.25rem 1rem;
     }
-    div[data-testid="stRadio"] > div > label {
-        display: flex !important;
-        flex-direction: column;
-        align-items: center;
-        flex: 1;
-        cursor: pointer;
-    }
-    div[data-testid="stRadio"] > div > label > div:first-child { display: none; }
     </style>
     """, unsafe_allow_html=True)
 
-    cfpb = {k: v for k, v in ss("cfpb").items()}  # copy
+    cfpb = {k: v for k, v in ss("cfpb").items()}
 
-    # ── Part 1 ───────────────────────────────
+    # ── Part 1 ──────────────────────────────────────────────────────────────
     st.markdown("""
-    <div class="cfpb-section-header">
+    <div class="cfpb-part-header">
         Part 1 &nbsp;|&nbsp; How well does this statement describe you or your situation?
-    </div>
-    <div class="cfpb-col-headers cfpb-col-headers-p1">
-        <span>This statement describes me…</span>
-        <span>Completely</span>
-        <span>Very well</span>
-        <span>Somewhat</span>
-        <span>Very little</span>
-        <span>Not at all</span>
     </div>
     """, unsafe_allow_html=True)
 
     part1_items = [(i, t, s) for i, (t, p, s) in enumerate(CFPB_ITEMS, 1) if p == "agree"]
-
     for idx, text, score_vals in part1_items:
-        col_stmt, c1, c2, c3, c4, c5 = st.columns([2, 1, 1, 1, 1, 1])
-        with col_stmt:
-            st.markdown(f"<div style='padding:0.4rem 0;font-size:0.9rem;'>{idx}. {text}</div>",
-                        unsafe_allow_html=True)
-        # current index: find which option was previously selected
-        current_score = cfpb.get(f"q{idx}_score", score_vals[2])  # default Somewhat/Sometimes
-        try:
-            cur_idx = score_vals.index(current_score)
-        except ValueError:
-            cur_idx = 2
-
-        radio_cols = [c1, c2, c3, c4, c5]
-        chosen = None
-        for opt_i, (col, opt_label) in enumerate(zip(radio_cols, CFPB_AGREE_OPTS)):
-            with col:
-                selected = st.radio(
-                    label=f"q{idx}_opt{opt_i}",
-                    options=[opt_label],
-                    index=0 if opt_i == cur_idx else None,
-                    key=f"cfpb_{idx}_{opt_i}",
-                    label_visibility="collapsed",
-                )
-                if selected:
-                    chosen = opt_i
-
-        if chosen is not None:
-            cfpb[f"q{idx}_score"] = score_vals[chosen]
-        else:
-            cfpb[f"q{idx}_score"] = score_vals[cur_idx]
-
-    # ── Part 2 ───────────────────────────────
-    st.markdown("""
-    <div class="cfpb-section-header" style="margin-top:1.5rem;">
-        Part 2 &nbsp;|&nbsp; How often does this statement apply to you?
-    </div>
-    <div class="cfpb-col-headers cfpb-col-headers-p2">
-        <span>This statement applies to me…</span>
-        <span>Always</span>
-        <span>Often</span>
-        <span>Sometimes</span>
-        <span>Rarely</span>
-        <span>Never</span>
-    </div>
-    """, unsafe_allow_html=True)
-
-    part2_items = [(i, t, s) for i, (t, p, s) in enumerate(CFPB_ITEMS, 1) if p == "freq"]
-
-    for idx, text, score_vals in part2_items:
-        col_stmt, c1, c2, c3, c4, c5 = st.columns([2, 1, 1, 1, 1, 1])
-        with col_stmt:
-            st.markdown(f"<div style='padding:0.4rem 0;font-size:0.9rem;'>{idx}. {text}</div>",
-                        unsafe_allow_html=True)
+        # Find current selection index
         current_score = cfpb.get(f"q{idx}_score", score_vals[2])
         try:
             cur_idx = score_vals.index(current_score)
         except ValueError:
             cur_idx = 2
 
-        radio_cols = [c1, c2, c3, c4, c5]
-        chosen = None
-        for opt_i, (col, opt_label) in enumerate(zip(radio_cols, CFPB_FREQ_OPTS)):
-            with col:
-                selected = st.radio(
-                    label=f"q{idx}_opt{opt_i}",
-                    options=[opt_label],
-                    index=0 if opt_i == cur_idx else None,
-                    key=f"cfpb_{idx}_{opt_i}",
-                    label_visibility="collapsed",
-                )
-                if selected:
-                    chosen = opt_i
+        st.markdown(f'<div class="cfpb-q-label">{idx}. {text}</div>', unsafe_allow_html=True)
+        choice = st.radio(
+            label=f"q{idx}",
+            options=CFPB_AGREE_OPTS,
+            index=cur_idx,
+            horizontal=True,
+            key=f"cfpb_q{idx}",
+            label_visibility="collapsed",
+        )
+        chosen_idx = CFPB_AGREE_OPTS.index(choice)
+        cfpb[f"q{idx}_score"] = score_vals[chosen_idx]
+        st.markdown("<div style='margin-bottom:0.75rem;border-bottom:1px solid #EDE5F5;'></div>",
+                    unsafe_allow_html=True)
 
-        if chosen is not None:
-            cfpb[f"q{idx}_score"] = score_vals[chosen]
-        else:
-            cfpb[f"q{idx}_score"] = score_vals[cur_idx]
+    # ── Part 2 ──────────────────────────────────────────────────────────────
+    st.markdown("""
+    <div class="cfpb-part-header" style="margin-top:1.5rem;">
+        Part 2 &nbsp;|&nbsp; How often does this statement apply to you?
+    </div>
+    """, unsafe_allow_html=True)
+
+    part2_items = [(i, t, s) for i, (t, p, s) in enumerate(CFPB_ITEMS, 1) if p == "freq"]
+    for idx, text, score_vals in part2_items:
+        current_score = cfpb.get(f"q{idx}_score", score_vals[2])
+        try:
+            cur_idx = score_vals.index(current_score)
+        except ValueError:
+            cur_idx = 2
+
+        st.markdown(f'<div class="cfpb-q-label">{idx}. {text}</div>', unsafe_allow_html=True)
+        choice = st.radio(
+            label=f"q{idx}",
+            options=CFPB_FREQ_OPTS,
+            index=cur_idx,
+            horizontal=True,
+            key=f"cfpb_q{idx}",
+            label_visibility="collapsed",
+        )
+        chosen_idx = CFPB_FREQ_OPTS.index(choice)
+        cfpb[f"q{idx}_score"] = score_vals[chosen_idx]
+        st.markdown("<div style='margin-bottom:0.75rem;border-bottom:1px solid #EDE5F5;'></div>",
+                    unsafe_allow_html=True)
 
     ss_set("cfpb", cfpb)
 
@@ -936,7 +876,7 @@ def step_confidence():
             <div style="position:relative;height:18px;background:#D4C9E8;border-radius:99px;overflow:hidden;">
                 <div style="width:{gauge_pct}%;height:100%;background:linear-gradient(90deg,#8B1A1A 0%,#7A4F00 40%,#1E5C3A 70%);border-radius:99px;transition:width 0.5s;"></div>
             </div>
-            <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:#7A6A94;margin-top:4px;">
+            <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:#5E4D78;margin-top:4px;">
                 <span>0 — Lower</span><span>40</span><span>Moderate — 60</span><span>80</span><span>Higher — 100</span>
             </div>
         </div>
@@ -969,7 +909,7 @@ def step_confidence():
         </thead>
         <tbody>{rows}</tbody>
     </table>
-    <p style="font-size:0.78rem;color:#7A6A94;margin-top:0.5rem;">
+    <p style="font-size:0.78rem;color:#5E4D78;margin-top:0.5rem;">
         Scores are produced using the CFPB official lookup table adjusted for age and self-administration.
         Financial well-being is best understood as progress over time — not a fixed pass/fail threshold.
     </p>
@@ -1050,34 +990,32 @@ def step_networth():
     nw = ss("nw")
 
     st.markdown("#### 🟢 Assets")
-    c1, c2 = st.columns(2)
-    asset_fields = [
-        ("cash",            "Cash & Checking accounts", c1),
-        ("savings_nw",      "Savings accounts / CDs",   c2),
-        ("investments",     "Taxable brokerage / investments", c1),
-        ("retirement_accts","All retirement accounts (401k, IRA, Roth, etc.)", c2),
-        ("home",            "Primary home / real estate value", c1),
-        ("vehicle",         "Vehicle(s) value",          c2),
-    ]
-    for key, label, col in asset_fields:
-        with col:
-            nw[key] = st.number_input(label, 0, 50_000_000, nw.get(key, 0),
-                                      step=500, format="%d", key=f"nw_{key}")
+    nw["cash"]             = st.number_input("Cash & Checking accounts", 0, 50_000_000,
+        nw.get("cash", 0), step=500, format="%d", key="nw_cash")
+    nw["savings_nw"]       = st.number_input("Savings accounts / CDs", 0, 50_000_000,
+        nw.get("savings_nw", 0), step=500, format="%d", key="nw_savings_nw")
+    nw["investments"]      = st.number_input("Taxable brokerage / investments", 0, 50_000_000,
+        nw.get("investments", 0), step=500, format="%d", key="nw_investments")
+    nw["retirement_accts"] = st.number_input("All retirement accounts (401k, IRA, Roth, etc.)", 0, 50_000_000,
+        nw.get("retirement_accts", 0), step=500, format="%d", key="nw_retirement_accts")
+    nw["home"]             = st.number_input("Primary home / real estate value", 0, 50_000_000,
+        nw.get("home", 0), step=500, format="%d", key="nw_home")
+    nw["vehicle"]          = st.number_input("Vehicle(s) value", 0, 500_000,
+        nw.get("vehicle", 0), step=500, format="%d", key="nw_vehicle")
 
     st.markdown("#### 🔴 Liabilities")
-    c1, c2 = st.columns(2)
-    liab_fields = [
-        ("cc_debt",      "Credit card debt",          c1),
-        ("student",      "Student loans",              c2),
-        ("auto_loan",    "Auto loan(s)",               c1),
-        ("mortgage",     "Mortgage balance",           c2),
-        ("personal_loan","Personal / other loans",     c1),
-        ("other_debt",   "Other debts (HELOC, etc.)",  c2),
-    ]
-    for key, label, col in liab_fields:
-        with col:
-            nw[key] = st.number_input(label, 0, 10_000_000, nw.get(key, 0),
-                                      step=500, format="%d", key=f"nw_{key}")
+    nw["cc_debt"]      = st.number_input("Credit card debt", 0, 1_000_000,
+        nw.get("cc_debt", 0), step=500, format="%d", key="nw_cc_debt")
+    nw["student"]      = st.number_input("Student loans", 0, 1_000_000,
+        nw.get("student", 0), step=500, format="%d", key="nw_student")
+    nw["auto_loan"]    = st.number_input("Auto loan(s)", 0, 200_000,
+        nw.get("auto_loan", 0), step=500, format="%d", key="nw_auto_loan")
+    nw["mortgage"]     = st.number_input("Mortgage balance", 0, 10_000_000,
+        nw.get("mortgage", 0), step=500, format="%d", key="nw_mortgage")
+    nw["personal_loan"]= st.number_input("Personal / other loans", 0, 500_000,
+        nw.get("personal_loan", 0), step=500, format="%d", key="nw_personal_loan")
+    nw["other_debt"]   = st.number_input("Other debts (HELOC, medical, etc.)", 0, 500_000,
+        nw.get("other_debt", 0), step=500, format="%d", key="nw_other_debt")
 
     ss_set("nw", nw)
     assets, liabs, total = net_worth()
@@ -1102,7 +1040,7 @@ def step_networth():
             &nbsp;·&nbsp; Peer median: <strong>{fmt_dollar(bench_med)}</strong>
             &nbsp;·&nbsp; 75th percentile: <strong>{fmt_dollar(bench_p75)}</strong>
         </div>
-        <div style="margin-top:0.5rem;font-size:0.82rem;color:#7A6A94;">
+        <div style="margin-top:0.5rem;font-size:0.82rem;color:#5E4D78;">
             ⚠️ Descriptive benchmark: reflects what peers <em>have</em>, not what is needed for financial security.
         </div>
     </div>
@@ -1149,35 +1087,31 @@ def step_cashflow():
     exp = ss("exp")
 
     st.markdown("#### Fixed Expenses *(same each month)*")
-    c1, c2 = st.columns(2)
-    fixed_fields = [
-        ("housing",    "Housing (rent or mortgage)", "25–35% of gross", c1),
-        ("transport",  "Transportation / car payment", "10–15%", c2),
-        ("insurance",  "Insurance (health, auto, life)", "5–10%", c1),
-        ("debt_min",   "Minimum debt payments", "varies", c2),
-    ]
-    for key, label, tip, col in fixed_fields:
-        with col:
-            exp[key] = st.number_input(f"{label} *(typical: {tip})*",
-                                       0, 20_000, exp.get(key, 0), step=50, format="%d", key=f"exp_{key}")
+    exp["housing"]  = st.number_input("Housing (rent or mortgage)",
+        0, 20_000, exp.get("housing", 0), step=50, format="%d", key="exp_housing")
+    exp["transport"] = st.number_input("Transportation (car payment, insurance, gas)",
+        0, 10_000, exp.get("transport", 0), step=25, format="%d", key="exp_transport")
+    exp["insurance"] = st.number_input("Insurance (health, life, disability — not auto)",
+        0, 5_000, exp.get("insurance", 0), step=25, format="%d", key="exp_insurance")
+    exp["debt_min"]  = st.number_input("Minimum debt payments (student loans, credit cards, etc.)",
+        0, 10_000, exp.get("debt_min", 0), step=25, format="%d", key="exp_debt_min")
 
     st.markdown("#### Flexible Expenses *(variable each month)*")
-    c1, c2 = st.columns(2)
-    flex_fields = [
-        ("groceries",    "Groceries & household supplies", "5–10%", c1),
-        ("utilities",    "Utilities & phone", "3–6%", c2),
-        ("personal",     "Personal care & clothing", "2–4%", c1),
-        ("entertainment","Entertainment & dining out", "5–10%", c2),
-        ("other_flex",   "Other variable expenses", "varies", c1),
-    ]
-    for key, label, tip, col in flex_fields:
-        with col:
-            exp[key] = st.number_input(f"{label} *(typical: {tip})*",
-                                       0, 10_000, exp.get(key, 0), step=25, format="%d", key=f"exp_{key}")
+    exp["groceries"]     = st.number_input("Groceries & household supplies",
+        0, 5_000, exp.get("groceries", 0), step=25, format="%d", key="exp_groceries")
+    exp["utilities"]     = st.number_input("Utilities & phone",
+        0, 2_000, exp.get("utilities", 0), step=10, format="%d", key="exp_utilities")
+    exp["personal"]      = st.number_input("Personal care & clothing",
+        0, 3_000, exp.get("personal", 0), step=10, format="%d", key="exp_personal")
+    exp["entertainment"] = st.number_input("Entertainment & dining out",
+        0, 5_000, exp.get("entertainment", 0), step=25, format="%d", key="exp_entertainment")
+    exp["other_flex"]    = st.number_input("Other variable expenses",
+        0, 5_000, exp.get("other_flex", 0), step=25, format="%d", key="exp_other_flex")
 
     st.markdown("#### Occasional / Annual Expenses")
-    occ = st.number_input("Annual total (gifts, travel, subscriptions, car maintenance, etc.)",
-                          0, 200_000, ss("occ_annual"), step=100, format="%d")
+    occ = st.number_input(
+        "Annual total (gifts, travel, subscriptions, car maintenance, medical copays, etc.)",
+        0, 200_000, ss("occ_annual"), step=100, format="%d")
     ss_set("occ_annual", occ)
     ss_set("exp", exp)
 
@@ -1189,9 +1123,11 @@ def step_cashflow():
     elif sr >= 15:
         sr_color, sr_msg = "#1E5C3A", "✅ Good savings rate — meeting the 15% guideline."
     elif sr >= 10:
-        sr_color, sr_msg = "#7A4F00", "⚠️ Moderate — try to reach 15–20% by trimming flexible spending."
+        sr_color, sr_msg = "#7A4F00", "⚠️ Moderate savings rate. Aim for 15–20% for long-term security."
+    elif surplus > 0:
+        sr_color, sr_msg = "#7A4F00", "⚠️ Low savings rate. Look for opportunities to reduce expenses or increase income."
     else:
-        sr_color, sr_msg = "#8B1A1A", "🚨 Low savings rate — focus on increasing income or reducing expenses."
+        sr_color, sr_msg = "#8B1A1A", "🚨 Expenses exceed income. Addressing this gap is the top priority."
 
     st.markdown(f"""
     <div class="card" style="border-left:4px solid {sr_color};margin-top:1.5rem;">
@@ -1205,25 +1141,12 @@ def step_cashflow():
     </div>
     """, unsafe_allow_html=True)
 
-    # Housing ratio check
-    housing_ratio = (exp.get("housing", 0) / gross_mo * 100) if gross_mo else 0
-    if housing_ratio > 30:
-        st.markdown(f"""
-        <div class="card card-amber">
-            ⚠️ <strong>Housing cost alert:</strong> Your housing expense is
-            <strong>{housing_ratio:.0f}% of gross income</strong>.
-            Financial planning guidelines recommend keeping housing below 28–30%.
-            High housing costs compress your ability to save and build wealth.
-        </div>
-        """, unsafe_allow_html=True)
-
     st.markdown("""
     <div class="citation">
-        <strong>Sources:</strong><br>
-        Garman, E. T., &amp; Forgue, R. E. (2018). <em>Personal finance</em> (13th ed.). Cengage Learning.<br>
-        U.S. Department of Housing and Urban Development. (2023). <em>Affordable housing.</em>
-        <a href="https://www.hud.gov/program_offices/comm_planning/affordablehousing">
-        https://www.hud.gov/program_offices/comm_planning/affordablehousing</a>
+        <strong>Savings rate guideline:</strong> Financial planning research consistently recommends saving at least
+        15% of gross income (including employer retirement contributions) to maintain a stable standard of living
+        through retirement. Source: Pfau, W. D. (2011). Safe savings rates: A new approach to retirement planning
+        over the life cycle. <em>Journal of Financial Planning, 24</em>(5), 42–50.
     </div>
     """, unsafe_allow_html=True)
 
@@ -1439,7 +1362,7 @@ def step_retirement():
                 <div class="value">{years_left}</div>
             </div>
         </div>
-        <p style="font-size:0.78rem;color:#7A6A94;margin-top:0.75rem;">
+        <p style="font-size:0.78rem;color:#5E4D78;margin-top:0.75rem;">
             ⚠️ Projection assumes constant {ret_return:.1f}% return and consistent contributions.
             Actual returns vary. This does not account for inflation (~3%/year), taxes on withdrawals,
             or Social Security income. Consult a CFP® for personalized projections.
@@ -1468,7 +1391,7 @@ def step_retirement():
     rows2 = ""
     for ag, med in SCF_RET.items():
         hl = ' class="highlight"' if ag == bracket else ""
-        rows2 += f'<tr{hl}><td>{"▶ " if ag==bracket else ""}{ag}</td><td>{fmt_dollar(med)}</td><td style="font-size:0.78rem;color:#7A6A94;">What peers have — not a sufficiency target</td></tr>'
+        rows2 += f'<tr{hl}><td>{"▶ " if ag==bracket else ""}{ag}</td><td>{fmt_dollar(med)}</td><td style="font-size:0.78rem;color:#5E4D78;">What peers have — not a sufficiency target</td></tr>'
     st.markdown(f"""
     <table class="bench-table">
         <thead><tr><th>Age Group</th><th>Median Retirement Savings</th><th>Note</th></tr></thead>
