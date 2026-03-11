@@ -25,244 +25,152 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-/* ── FORCE LIGHT MODE — overrides Streamlit dark theme detection ──────────── */
-html, body { color-scheme: light !important; }
-[data-testid="stAppViewContainer"],
-[data-testid="stAppViewContainer"] > section,
-[data-testid="stMain"],
-.main, .block-container,
-[data-testid="stSidebar"] {
-    background-color: #FAF7F4 !important;
-    color: #1A0A2E !important;
-}
-/* Force all Streamlit text elements to dark */
-p, span, label, div, li, td, th, caption,
-[class*="st-"], [data-testid] {
-    color: #1A0A2E;
-}
-/* Input fields — force light */
-[data-testid="stNumberInput"] input,
-[data-testid="stTextInput"] input,
-[data-testid="stSelectbox"] select,
-.stSelectbox > div > div,
-[data-baseweb="select"] > div,
-[data-baseweb="input"] > div {
-    background-color: #FFFFFF !important;
-    color: #1A0A2E !important;
-    border-color: #C4B8DE !important;
-}
-/* Radio button labels */
-[data-testid="stRadio"] label span,
-[data-testid="stRadio"] label p {
-    color: #1A0A2E !important;
-}
-/* Checkbox labels */
-[data-testid="stCheckbox"] label span,
-[data-testid="stCheckbox"] label p {
-    color: #1A0A2E !important;
-    font-size: 0.9rem !important;
-}
-/* Captions and help text */
-[data-testid="stCaptionContainer"] p,
-small, .stCaption {
-    color: #5E4D78 !important;
-}
-/* Markdown text */
-[data-testid="stMarkdownContainer"] p,
-[data-testid="stMarkdownContainer"] li,
-[data-testid="stMarkdownContainer"] span {
-    color: #1A0A2E !important;
-}
-/* step subtitle gets slightly muted */
-.step-subtitle,
-[data-testid="stMarkdownContainer"] .step-subtitle {
-    color: #3D2C5C !important;
-}
+/* ── Works with Streamlit dark mode — DO NOT override color-scheme ────────── */
 
-/* ── TYPOGRAPHY ───────────────────────────────────────────────────────────── */
-html, body, [class*="css"] {
-    font-family: 'DM Sans', sans-serif;
-}
-h1, h2, h3, .step-title {
-    font-family: 'DM Serif Display', serif !important;
-    letter-spacing: -0.02em;
-    color: #1A0A2E !important;
-}
-.step-subtitle { color: #3D2C5C; font-size: 0.95rem; margin-bottom: 1.5rem; }
+/* Typography */
+html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
+h1, h2, h3 { font-family: 'DM Serif Display', serif; letter-spacing: -0.02em; }
 
-/* ── LAYOUT ───────────────────────────────────────────────────────────────── */
+/* Layout */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 header {visibility: hidden;}
 .block-container { max-width: 820px; padding-top: 2rem; padding-bottom: 4rem; }
 
-/* ── CARDS ────────────────────────────────────────────────────────────────── */
-.card {
-    background: #FFFFFF !important;
-    border-radius: 16px;
-    padding: 1.5rem 2rem;
-    border: 1px solid #DDD5EC;
-    margin-bottom: 1rem;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    color: #1A0A2E !important;
-}
-.card p, .card span, .card div, .card li { color: #1A0A2E !important; }
-.card-green  { border-left: 4px solid #1E5C3A !important; background: #E8F5EE !important; }
-.card-green  p, .card-green span, .card-green li { color: #1A3020 !important; }
-.card-amber  { border-left: 4px solid #7A4F00 !important; background: #FEF9ED !important; }
-.card-amber  p, .card-amber span, .card-amber li { color: #3D2700 !important; }
-.card-red    { border-left: 4px solid #8B1A1A !important; background: #FDF0F0 !important; }
-.card-red    p, .card-red span, .card-red li { color: #4A0D0D !important; }
-.card-blue   { border-left: 4px solid #6B3FA0 !important; background: #F3EDFA !important; }
-.card-blue   p, .card-blue span, .card-blue li { color: #2A1050 !important; }
-.card-purple { border-left: 4px solid #6B3FA0 !important; background: #F3EDFA !important; }
-.card-slate  { border-left: 4px solid #5E4D78 !important; background: #FAF7F4 !important; }
-
-/* ── HERO HEADER ──────────────────────────────────────────────────────────── */
+/* ── App header ── */
 .app-header {
-    background: linear-gradient(135deg, #3D1A5C 0%, #6B3FA0 100%);
-    color: white !important;
-    border-radius: 20px;
-    padding: 2.5rem 2.5rem 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 8px 32px rgba(61,26,92,0.25);
+    background: linear-gradient(135deg, #2D1B5E 0%, #5B2FA0 100%);
+    border-radius: 16px;
+    padding: 2rem 2.5rem 1.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 24px rgba(91,47,160,0.35);
 }
-.app-header h1, .app-header p, .app-header span { color: white !important; }
-.app-header h1 { margin: 0; font-size: 2.1rem; }
-.app-header p  { color: #E8D9F8 !important; margin: 0.4rem 0 0; font-size: 1.05rem; }
+.app-header h1 { color: #F0EBFF; margin: 0; font-size: 2rem; font-family: 'DM Serif Display', serif; }
+.app-header p  { color: #C9B8F5; margin: 0.4rem 0 0; font-size: 1rem; }
 
-/* ── PROGRESS BAR ─────────────────────────────────────────────────────────── */
-.progress-wrap  { margin: 0 0 2rem; }
-.progress-label { display: flex; justify-content: space-between; font-size: 0.78rem; color: #3D2C5C !important; margin-bottom: 6px; }
-.progress-label strong { color: #3D1A5C !important; }
-.progress-track { background: #D4C9E8; border-radius: 99px; height: 8px; width: 100%; overflow: hidden; }
-.progress-fill  { background: linear-gradient(90deg, #3D1A5C, #9B72CF); height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+/* ── Progress bar ── */
+.progress-wrap  { margin: 0 0 1.75rem; }
+.progress-label { display:flex; justify-content:space-between; font-size:0.78rem; color:#A89BC2; margin-bottom:5px; }
+.progress-label strong { color:#C084FC; }
+.progress-track { background:#2A1D4E; border-radius:99px; height:8px; overflow:hidden; }
+.progress-fill  { background:linear-gradient(90deg,#7C3AED,#C084FC); height:100%; border-radius:99px; transition:width 0.4s ease; }
 
-/* ── KPI GRID ─────────────────────────────────────────────────────────────── */
-.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin: 1rem 0; }
-.kpi-box  { background: #FFFFFF !important; border-radius: 12px; padding: 1rem; border: 1px solid #D4C9E8; text-align: center; }
-.kpi-box .label { font-size: 0.72rem; color: #5E4D78 !important; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
-.kpi-box .value { font-size: 1.5rem; font-weight: 700; color: #3D1A5C !important; margin-top: 2px; }
+/* ── Step title / subtitle ── */
+.step-title    { font-family:'DM Serif Display',serif; font-size:1.7rem; color:#F0EBFF; margin:0 0 0.25rem; }
+.step-subtitle { color:#C9B8F5; font-size:0.92rem; margin-bottom:1.5rem; line-height:1.55; }
 
-/* ── CITATION ─────────────────────────────────────────────────────────────── */
+/* ── Cards ── */
+.card {
+    background: #1A1033;
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid #3D2B6B;
+    margin-bottom: 1rem;
+}
+.card-green  { border-left:4px solid #4ADE80; background:#0D2818; }
+.card-amber  { border-left:4px solid #FCD34D; background:#1A1200; }
+.card-red    { border-left:4px solid #F87171; background:#1A0A0A; }
+.card-blue   { border-left:4px solid #A78BFA; background:#1A1033; }
+.card-purple { border-left:4px solid #A78BFA; background:#1A1033; }
+.card-slate  { border-left:4px solid #6B7280; background:#1A1A2E; }
+
+/* ── KPI grid ── */
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:0.85rem; margin:1rem 0; }
+.kpi-box  { background:#0E0A1E; border-radius:10px; padding:0.9rem; border:1px solid #3D2B6B; text-align:center; }
+.kpi-box .label { font-size:0.7rem; color:#A89BC2; text-transform:uppercase; letter-spacing:0.05em; font-weight:600; }
+.kpi-box .value { font-size:1.45rem; font-weight:700; color:#F0EBFF; margin-top:3px; }
+
+/* ── Citation ── */
 .citation {
-    font-size: 0.78rem;
-    color: #3D2C5C !important;
-    background: #FAF7F4 !important;
-    border-radius: 8px;
-    padding: 0.85rem 1rem;
-    margin-top: 1rem;
-    border-left: 3px solid #6B3FA0;
-    line-height: 1.6;
+    font-size:0.78rem;
+    color:#A89BC2;
+    background:#0E0A1E;
+    border-radius:8px;
+    padding:0.85rem 1rem;
+    margin-top:1rem;
+    border-left:3px solid #7C3AED;
+    line-height:1.6;
 }
-.citation a { color: #6B3FA0 !important; }
+.citation a { color:#C084FC; }
+.citation strong { color:#D4C8F0; }
 
-/* ── NAV BUTTONS ──────────────────────────────────────────────────────────── */
+/* ── Nav buttons ── */
 .stButton > button {
-    border-radius: 10px !important;
-    font-weight: 600 !important;
-    font-family: 'DM Sans', sans-serif !important;
-    transition: all 0.2s ease !important;
-    font-size: 0.95rem !important;
+    border-radius:10px !important;
+    font-weight:600 !important;
+    font-family:'DM Sans',sans-serif !important;
+    transition:all 0.2s !important;
+    font-size:0.95rem !important;
 }
 div[data-testid="column"]:first-child .stButton > button {
-    background: #F2EDF9 !important;
-    color: #3D1A5C !important;
-    border: 2px solid #C4B8DE !important;
+    background:#1A1033 !important;
+    color:#C9B8F5 !important;
+    border:2px solid #3D2B6B !important;
 }
 div[data-testid="column"]:last-child .stButton > button {
-    background: linear-gradient(135deg, #3D1A5C, #6B3FA0) !important;
-    color: white !important;
-    border: none !important;
+    background:linear-gradient(135deg,#5B2FA0,#7C3AED) !important;
+    color:#F0EBFF !important;
+    border:none !important;
 }
 
-/* ── SECTION DIVIDER ──────────────────────────────────────────────────────── */
-.divider { border: none; border-top: 2px solid #D4C9E8; margin: 2rem 0; }
+/* ── Divider ── */
+.divider { border:none; border-top:1px solid #3D2B6B; margin:1.75rem 0; }
 
-/* ── ACTION ITEMS ─────────────────────────────────────────────────────────── */
+/* ── Action items ── */
 .action-item {
-    display: flex; gap: 12px; align-items: flex-start;
-    background: #FFFFFF !important; border-radius: 12px;
-    padding: 1rem 1.2rem; margin-bottom: 0.75rem;
-    border: 1px solid #D4C9E8;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display:flex; gap:12px; align-items:flex-start;
+    background:#1A1033; border-radius:12px;
+    padding:1rem 1.2rem; margin-bottom:0.75rem;
+    border:1px solid #3D2B6B;
 }
-.action-icon { font-size: 1.4rem; flex-shrink: 0; }
-.action-text strong { display: block; font-size: 0.92rem; color: #1A0A2E !important; margin-bottom: 4px; }
-.action-text span   { font-size: 0.85rem; color: #3D2C5C !important; line-height: 1.5; }
+.action-icon { font-size:1.3rem; flex-shrink:0; }
+.action-text strong { display:block; font-size:0.92rem; color:#F0EBFF; margin-bottom:4px; }
+.action-text span   { font-size:0.85rem; color:#C9B8F5; line-height:1.5; }
 
-/* ── PRIORITY BADGES ──────────────────────────────────────────────────────── */
-.badge {
-    display: inline-block; font-size: 0.7rem; font-weight: 700;
-    padding: 2px 10px; border-radius: 99px; margin-left: 6px;
-    text-transform: uppercase; letter-spacing: 0.06em;
-}
-.badge-critical { background: #FDEAEA; color: #8B1A1A !important; border: 1px solid #8B1A1A; }
-.badge-high     { background: #FEF4DC; color: #7A4F00 !important; border: 1px solid #7A4F00; }
-.badge-medium   { background: #EDE5F5; color: #3D1A5C !important; border: 1px solid #6B3FA0; }
-.badge-good     { background: #E4F4EC; color: #1E5C3A !important; border: 1px solid #1E5C3A; }
+/* ── Badges ── */
+.badge { display:inline-block; font-size:0.68rem; font-weight:700; padding:2px 9px; border-radius:99px; margin-left:6px; text-transform:uppercase; letter-spacing:0.06em; }
+.badge-critical { background:#3D0A0A; color:#FCA5A5; border:1px solid #F87171; }
+.badge-high     { background:#2A1E00; color:#FDE68A; border:1px solid #FCD34D; }
+.badge-medium   { background:#1A1033; color:#C4B5FD; border:1px solid #A78BFA; }
+.badge-good     { background:#082010; color:#86EFAC; border:1px solid #4ADE80; }
 
-/* ── BENCHMARK TABLE ──────────────────────────────────────────────────────── */
-.bench-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
-.bench-table th { background: #3D1A5C !important; color: white !important; padding: 10px 14px; text-align: left; font-weight: 600; }
-.bench-table td { padding: 9px 14px; border-bottom: 1px solid #D4C9E8; color: #1A0A2E !important; background: #FFFFFF; }
-.bench-table tr.highlight td { background: #EDE5F5 !important; font-weight: 700; color: #1A0A2E !important; }
-.bench-table tr:hover td { background: #FAF7F4 !important; }
+/* ── Benchmark table ── */
+.bench-table { width:100%; border-collapse:collapse; font-size:0.85rem; margin-top:0.5rem; }
+.bench-table th { background:#2D1B5E; color:#F0EBFF; padding:10px 14px; text-align:left; font-weight:600; }
+.bench-table td { padding:9px 14px; border-bottom:1px solid #2A1D4E; color:#D4C8F0; background:#1A1033; }
+.bench-table tr.highlight td { background:#2D1B5E; font-weight:700; color:#F0EBFF; }
+.bench-table tr:hover td { background:#1E1340; }
 
-/* ── NET WORTH RESPONSIVE GRID ────────────────────────────────────────────── */
-.nw-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin-top: 0.5rem;
-}
-@media (max-width: 640px) {
-    .nw-grid { grid-template-columns: 1fr; }
-}
-.nw-section h4 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.1rem;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 2px solid;
-}
-.nw-section.assets h4  { color: #1E5C3A !important; border-color: #1E5C3A; }
-.nw-section.liabs  h4  { color: #8B1A1A !important; border-color: #8B1A1A; }
-
-/* ── CFPB INSTRUMENT ──────────────────────────────────────────────────────── */
+/* ── CFPB instrument ── */
 .cfpb-part-header {
-    background: #3D1A5C !important;
-    color: white !important;
-    border-radius: 10px 10px 0 0;
-    padding: 0.85rem 1.2rem;
-    font-weight: 600;
-    font-size: 0.95rem;
-    margin-top: 1.5rem;
-    line-height: 1.4;
+    background:#2D1B5E;
+    color:#F0EBFF;
+    border-radius:10px 10px 0 0;
+    padding:0.85rem 1.2rem;
+    font-weight:600;
+    font-size:0.95rem;
+    margin-top:1.5rem;
+    line-height:1.4;
+    border:1px solid #3D2B6B;
+    border-bottom:none;
 }
 .cfpb-q-label {
-    font-size: 0.95rem;
-    color: #1A0A2E !important;
-    font-weight: 600;
-    margin: 1rem 0 0.4rem;
-    line-height: 1.45;
-}
-.cfpb-divider {
-    border: none;
-    border-top: 1px solid #EDE5F5;
-    margin: 0.5rem 0 0;
+    font-size:0.95rem;
+    color:#F0EBFF;
+    font-weight:600;
+    margin:1rem 0 0.4rem;
+    line-height:1.5;
 }
 
-/* ── BLS HINT BOX ─────────────────────────────────────────────────────────── */
+/* ── BLS hint ── */
 .bls-hint {
-    font-size: 0.78rem;
-    color: #3D2C5C !important;
-    background: #F3EDFA !important;
-    border-radius: 6px;
-    padding: 0.4rem 0.7rem;
-    margin-top: -0.5rem;
-    margin-bottom: 0.75rem;
-    border-left: 3px solid #6B3FA0;
+    font-size:0.78rem;
+    color:#C4B5FD;
+    background:#1A1033;
+    border-radius:6px;
+    padding:0.4rem 0.75rem;
+    margin-bottom:0.75rem;
+    border-left:3px solid #7C3AED;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -606,7 +514,7 @@ def fmt_dollar(n):
         return f"${n:,.0f}"
     return f"${n:.0f}"
 
-def metric_bar(label, val, max_val, color="#6B3FA0", suffix=""):
+def metric_bar(label, val, max_val, color="#A78BFA", suffix=""):
     pct = min(100, max(0, val / max_val * 100)) if max_val else 0
     st.markdown(f"""
     <div class="metric-bar-wrap">
@@ -635,7 +543,7 @@ def step_welcome():
     st.markdown("""
     <div class="card card-blue">
         <strong>📋 What you'll complete:</strong>
-        <ul style="margin:0.5rem 0 0; padding-left:1.2rem; color:#3D1A5C; font-size:0.9rem;">
+        <ul style="margin:0.5rem 0 0; padding-left:1.2rem; color:#C084FC; font-size:0.9rem;">
             <li>Demographic profile &amp; goal-setting activity</li>
             <li>CFPB Financial Well-Being Scale (validated 10-item instrument)</li>
             <li>Financial confidence self-assessment</li>
@@ -653,21 +561,21 @@ def step_welcome():
         st.markdown("""
         <div class="card card-amber">
             <strong>⏱ Time required</strong><br>
-            <span style="font-size:0.88rem;color:#7A4F00;">10–15 minutes</span>
+            <span style="font-size:0.88rem;color:#FCD34D;">10–15 minutes</span>
         </div>
         """, unsafe_allow_html=True)
     with col2:
         st.markdown("""
         <div class="card card-green">
             <strong>🔒 Privacy</strong><br>
-            <span style="font-size:0.88rem;color:#1E5C3A;">All data stays in your browser session</span>
+            <span style="font-size:0.88rem;color:#4ADE80;">All data stays in your browser session</span>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("""
     <div class="card card-slate">
         <strong>About Benchmarks in This Tool</strong><br><br>
-        <span style="font-size:0.88rem;color:#3D2C5C;">
+        <span style="font-size:0.88rem;color:#D4C8F0;">
         <strong>Descriptive benchmarks</strong> (What others have) — drawn from Federal Reserve Survey of Consumer Finances data.
         Shows where you stand relative to peers. <em>Note: Most Americans are under-saved for retirement, so "average" ≠ "on track."</em><br><br>
         <strong>Prescriptive benchmarks</strong> (What you need) — research-based goals from Fidelity, actuarial science, and
@@ -707,7 +615,7 @@ def step_demographics():
     st.markdown(f"""
     <div class="card card-blue" style="margin-top:1rem;">
         <strong>Your Profile</strong><br>
-        <span style="font-size:0.9rem;color:#3D1A5C;">
+        <span style="font-size:0.9rem;color:#C084FC;">
         Age <strong>{age}</strong> · Annual salary <strong>{fmt_dollar(sal)}</strong> ·
         Retiring at <strong>{ret_age}</strong> ({yrs} years away) ·
         Fidelity retirement goal at your age: <strong>{mult:.1f}× salary = {fmt_dollar(mult * sal)}</strong>
@@ -759,7 +667,7 @@ def step_goals():
         st.markdown(f"""
         <div class="card card-green">
             ✅ <strong>{n} goal{'s' if n>1 else ''} selected</strong> — great focus!
-            <ul style="margin:0.4rem 0 0;padding-left:1.2rem;font-size:0.88rem;color:#1E5C3A;">
+            <ul style="margin:0.4rem 0 0;padding-left:1.2rem;font-size:0.88rem;color:#4ADE80;">
             {"".join(f"<li>{g}</li>" for g in sorted(current_goals))}
             </ul>
         </div>
@@ -818,10 +726,10 @@ def step_cfpb():
         border-radius: 0 0 10px 10px;
         margin-bottom: 0.5rem;
     }
-    .cfpb-q-card:nth-child(even) { background: #FAF7F4; }
+    .cfpb-q-card:nth-child(even) { background: #0E0A1E; }
     .cfpb-q-label {
         font-size: 0.92rem;
-        color: #1A0A2E;
+        color: #F0EBFF;
         font-weight: 500;
         margin-bottom: 0.4rem;
         line-height: 1.45;
@@ -864,7 +772,7 @@ def step_cfpb():
         )
         chosen_idx = CFPB_AGREE_OPTS.index(choice)
         cfpb[f"q{idx}_score"] = score_vals[chosen_idx]
-        st.markdown("<div style='margin-bottom:0.75rem;border-bottom:1px solid #EDE5F5;'></div>",
+        st.markdown("<div style='margin-bottom:0.75rem;border-bottom:1px solid #2D1B5E;'></div>",
                     unsafe_allow_html=True)
 
     # ── Part 2 ──────────────────────────────────────────────────────────────
@@ -893,7 +801,7 @@ def step_cfpb():
         )
         chosen_idx = CFPB_FREQ_OPTS.index(choice)
         cfpb[f"q{idx}_score"] = score_vals[chosen_idx]
-        st.markdown("<div style='margin-bottom:0.75rem;border-bottom:1px solid #EDE5F5;'></div>",
+        st.markdown("<div style='margin-bottom:0.75rem;border-bottom:1px solid #2D1B5E;'></div>",
                     unsafe_allow_html=True)
 
     ss_set("cfpb", cfpb)
@@ -939,53 +847,53 @@ def step_cfpb_score():
     else:           age_label = "70+"
 
     if score >= 61:
-        sc_color = "#1E5C3A"
+        sc_color = "#4ADE80"
         sc_tier  = "High financial well-being"
         sc_msg   = ("You report relatively high financial well-being — you feel in control of your day-to-day finances, "
                     "can absorb financial shocks, and are generally on track toward your goals. "
                     "Focus on maintaining these habits and building on this foundation.")
     elif score >= 41:
-        sc_color = "#7A4F00"
+        sc_color = "#FCD34D"
         sc_tier  = "Moderate financial well-being"
         sc_msg   = ("You report moderate financial well-being — the most common range for working-age Americans. "
                     "Some areas feel manageable while others create stress. "
                     "The personalized action plan at the end of this assessment will identify the highest-impact improvements.")
     else:
-        sc_color = "#8B1A1A"
+        sc_color = "#F87171"
         sc_tier  = "Lower financial well-being"
         sc_msg   = ("You report lower financial well-being. This is more common than many people realize and is often "
                     "driven by specific, addressable gaps — such as high debt load, income volatility, or lack of "
                     "emergency savings. Your action plan will prioritize the most critical next steps.")
 
     diff     = score - peer_med
-    diff_txt = (f"<strong style='color:#1E5C3A'>+{diff} above</strong>" if diff > 0
-                else f"<strong style='color:#8B1A1A'>{diff} below</strong>" if diff < 0
+    diff_txt = (f"<strong style='color:#4ADE80'>+{diff} above</strong>" if diff > 0
+                else f"<strong style='color:#F87171'>{diff} below</strong>" if diff < 0
                 else "<strong>equal to</strong>")
 
     st.markdown(f"""
-    <div class="card" style="border-left:5px solid {sc_color};background:#FFFFFF;padding:1.75rem 2rem;">
-        <div style="font-size:0.75rem;color:#5E4D78;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:0.5rem;">
+    <div class="card" style="border-left:5px solid {sc_color};background:#1A1033;padding:1.75rem 2rem;">
+        <div style="font-size:0.75rem;color:#A89BC2;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:0.5rem;">
             Your CFPB Financial Well-Being Score
         </div>
         <div style="display:flex;align-items:flex-end;gap:1.25rem;flex-wrap:wrap;">
             <div style="font-size:5rem;font-weight:800;color:{sc_color};line-height:1;">{score}</div>
             <div style="flex:1;min-width:180px;">
-                <div style="font-size:1.05rem;font-weight:700;color:#1A0A2E;">{sc_tier}</div>
-                <div style="font-size:0.82rem;color:#3D2C5C;margin-top:4px;">out of 100 &nbsp;·&nbsp; Raw total: {raw}/40</div>
-                <div style="font-size:0.85rem;color:#1A0A2E;margin-top:6px;font-weight:500;">
+                <div style="font-size:1.05rem;font-weight:700;color:#F0EBFF;">{sc_tier}</div>
+                <div style="font-size:0.82rem;color:#D4C8F0;margin-top:4px;">out of 100 &nbsp;·&nbsp; Raw total: {raw}/40</div>
+                <div style="font-size:0.85rem;color:#F0EBFF;margin-top:6px;font-weight:500;">
                     {diff_txt} the median for U.S. adults ages {age_label} (median: {peer_med})
                 </div>
             </div>
         </div>
         <div style="margin-top:1.25rem;">
-            <div style="position:relative;height:20px;background:#D4C9E8;border-radius:99px;overflow:hidden;">
-                <div style="width:{score}%;height:100%;background:linear-gradient(90deg,#8B1A1A 0%,#7A4F00 35%,#1E5C3A 65%);border-radius:99px;"></div>
+            <div style="position:relative;height:20px;background:#2A1D4E;border-radius:99px;overflow:hidden;">
+                <div style="width:{score}%;height:100%;background:linear-gradient(90deg,#F87171 0%,#FCD34D 40%,#4ADE80 70%);border-radius:99px;"></div>
             </div>
-            <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:#3D2C5C;margin-top:6px;font-weight:500;">
+            <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:#D4C8F0;margin-top:6px;font-weight:500;">
                 <span>0 — Lower</span><span>40</span><span>Moderate — 60</span><span>80</span><span>Higher — 100</span>
             </div>
         </div>
-        <p style="font-size:0.9rem;color:#1A0A2E;margin-top:1.25rem;line-height:1.6;">{sc_msg}</p>
+        <p style="font-size:0.9rem;color:#F0EBFF;margin-top:1.25rem;line-height:1.6;">{sc_msg}</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -998,14 +906,14 @@ def step_cfpb_score():
     for ag, med in AGE_MEDIANS:
         hl = ' class="highlight"' if ag == age_label else ""
         you_col = (f"<strong style='color:{sc_color}'>{score}</strong>" if ag == age_label else "")
-        rows += f"<tr{hl}><td style='color:#1A0A2E'>{'▶ ' if ag==age_label else ''}{ag}</td><td style='text-align:center;color:#1A0A2E'>{med}</td><td style='text-align:center'>{you_col}</td></tr>"
+        rows += f"<tr{hl}><td style='color:#F0EBFF'>{'▶ ' if ag==age_label else ''}{ag}</td><td style='text-align:center;color:#F0EBFF'>{med}</td><td style='text-align:center'>{you_col}</td></tr>"
 
     st.markdown(f"""
     <table class="bench-table">
         <thead><tr><th>Age Group</th><th style="text-align:center">Median Score</th><th style="text-align:center">Your Score</th></tr></thead>
         <tbody>{rows}</tbody>
     </table>
-    <p style="font-size:0.8rem;color:#3D2C5C;margin-top:0.75rem;">
+    <p style="font-size:0.8rem;color:#D4C8F0;margin-top:0.75rem;">
         Scores use the official CFPB lookup table (self-administered, adjusted for age).
         Well-being is best understood as progress over time — not a pass/fail threshold.
     </p>
@@ -1066,16 +974,16 @@ def step_confidence():
     avg = sum(conf.values()) / len(conf)
     low_areas = [CONF_AREAS[k] for k, v in conf.items() if v <= 2]
 
-    conf_color = "#1E5C3A" if avg >= 4 else "#7A4F00" if avg >= 3 else "#8B1A1A"
+    conf_color = "#4ADE80" if avg >= 4 else "#FCD34D" if avg >= 3 else "#F87171"
     low_html = ""
     if low_areas:
-        items_html = "".join(f"<li style='color:#8B1A1A'>{a}</li>" for a in low_areas)
-        low_html = f"<br><br><strong style='color:#8B1A1A'>Areas rated ≤ 2 — consider targeted education or professional guidance:</strong><ul style='font-size:0.88rem;margin:0.4rem 0 0;padding-left:1.3rem;'>{items_html}</ul>"
+        items_html = "".join(f"<li style='color:#F87171'>{a}</li>" for a in low_areas)
+        low_html = f"<br><br><strong style='color:#F87171'>Areas rated ≤ 2 — consider targeted education or professional guidance:</strong><ul style='font-size:0.88rem;margin:0.4rem 0 0;padding-left:1.3rem;'>{items_html}</ul>"
 
     st.markdown(f"""
     <div class="card" style="border-left:5px solid {conf_color};margin-top:1.5rem;">
-        <div style="font-size:1rem;font-weight:700;color:#1A0A2E;">Average Confidence: {avg:.1f} / 5</div>
-        <div style="font-size:0.9rem;color:#3D2C5C;margin-top:0.4rem;">
+        <div style="font-size:1rem;font-weight:700;color:#F0EBFF;">Average Confidence: {avg:.1f} / 5</div>
+        <div style="font-size:0.9rem;color:#D4C8F0;margin-top:0.4rem;">
         {"Strong overall confidence — maintain and build on it." if avg >= 4
          else "Moderate confidence — target lower-rated areas for education or professional advice." if avg >= 3
          else "Several areas need attention — consider financial education or one-on-one guidance."}
@@ -1143,7 +1051,7 @@ def step_networth():
     bracket = age_bracket(ss("age"))
     bench_med, bench_p75 = NW_BENCH[bracket]
 
-    nw_color = "#1E5C3A" if total > bench_med else "#7A4F00"
+    nw_color = "#4ADE80" if total > bench_med else "#FCD34D"
     tier = ("Top 25% for your age group" if total > bench_p75
             else "Above median for your age group" if total > bench_med
             else "Below median for your age group")
@@ -1153,23 +1061,23 @@ def step_networth():
         <div class="kpi-grid">
             <div class="kpi-box">
                 <div class="label">Total Assets</div>
-                <div class="value" style="color:#1E5C3A">{fmt_dollar(assets)}</div>
+                <div class="value" style="color:#4ADE80">{fmt_dollar(assets)}</div>
             </div>
             <div class="kpi-box">
                 <div class="label">Total Liabilities</div>
-                <div class="value" style="color:#8B1A1A">{fmt_dollar(liabs)}</div>
+                <div class="value" style="color:#F87171">{fmt_dollar(liabs)}</div>
             </div>
             <div class="kpi-box">
                 <div class="label">Net Worth</div>
                 <div class="value" style="color:{nw_color}">{fmt_dollar(total)}</div>
             </div>
         </div>
-        <div style="margin-top:1rem;font-size:0.9rem;color:#1A0A2E;font-weight:500;">
+        <div style="margin-top:1rem;font-size:0.9rem;color:#F0EBFF;font-weight:500;">
             {tier} &nbsp;·&nbsp;
             Peer median: <strong>{fmt_dollar(bench_med)}</strong> &nbsp;·&nbsp;
             75th percentile: <strong>{fmt_dollar(bench_p75)}</strong>
         </div>
-        <div style="margin-top:0.5rem;font-size:0.82rem;color:#3D2C5C;">
+        <div style="margin-top:0.5rem;font-size:0.82rem;color:#D4C8F0;">
             ⚠️ <em>Descriptive benchmark only</em> — reflects what peers have, not what is needed for financial security.
         </div>
     </div>
@@ -1179,7 +1087,7 @@ def step_networth():
     rows = ""
     for ag, (med, p75) in NW_BENCH.items():
         hl = ' class="highlight"' if ag == bracket else ""
-        rows += f'<tr{hl}><td style="color:#1A0A2E">{"▶ " if ag==bracket else ""}{ag}</td><td style="color:#1A0A2E">{fmt_dollar(med)}</td><td style="color:#1A0A2E">{fmt_dollar(p75)}</td></tr>'
+        rows += f'<tr{hl}><td style="color:#F0EBFF">{"▶ " if ag==bracket else ""}{ag}</td><td style="color:#F0EBFF">{fmt_dollar(med)}</td><td style="color:#F0EBFF">{fmt_dollar(p75)}</td></tr>'
     st.markdown(f"""
     <table class="bench-table">
         <thead><tr><th>Age Group</th><th>Median Net Worth</th><th>75th Percentile</th></tr></thead>
@@ -1215,7 +1123,7 @@ def step_cashflow():
     st.markdown(f"""
     <div class="card card-blue">
         <strong>Reference figures: BLS Consumer Expenditure Survey 2022 — {region}</strong><br>
-        <span style="font-size:0.85rem;color:#2A1050;">
+        <span style="font-size:0.85rem;color:#D4C8F0;">
         The dollar hints below show average monthly spending from the U.S. Bureau of Labor Statistics
         Consumer Expenditure Survey 2022 for the <strong>{region}</strong> region of the United States.
         These are <em>averages across all income levels</em> — your situation may differ.
@@ -1272,25 +1180,25 @@ def step_cashflow():
     surplus, sr = savings_rate()
 
     if sr >= 20:
-        sr_color, sr_msg = "#1E5C3A", "🌟 Excellent savings rate — on track for long-term security."
+        sr_color, sr_msg = "#4ADE80", "🌟 Excellent savings rate — on track for long-term security."
     elif sr >= 15:
-        sr_color, sr_msg = "#1E5C3A", "✅ Good savings rate — meeting the 15% research-based guideline."
+        sr_color, sr_msg = "#4ADE80", "✅ Good savings rate — meeting the 15% research-based guideline."
     elif sr >= 10:
-        sr_color, sr_msg = "#7A4F00", "⚠️ Moderate savings rate. Aim for 15–20% for long-term security."
+        sr_color, sr_msg = "#FCD34D", "⚠️ Moderate savings rate. Aim for 15–20% for long-term security."
     elif surplus > 0:
-        sr_color, sr_msg = "#7A4F00", "⚠️ Low savings rate. Look for opportunities to reduce expenses or increase income."
+        sr_color, sr_msg = "#FCD34D", "⚠️ Low savings rate. Look for opportunities to reduce expenses or increase income."
     else:
-        sr_color, sr_msg = "#8B1A1A", "🚨 Expenses exceed income. Addressing this gap is the top priority."
+        sr_color, sr_msg = "#F87171", "🚨 Expenses exceed income. Addressing this gap is the top priority."
 
     st.markdown(f"""
     <div class="card" style="border-left:5px solid {sr_color};margin-top:1.5rem;">
         <div class="kpi-grid">
             <div class="kpi-box"><div class="label">Net Income</div><div class="value">{fmt_dollar(income)}/mo</div></div>
-            <div class="kpi-box"><div class="label">Total Expenses</div><div class="value" style="color:#8B1A1A">{fmt_dollar(total_exp)}/mo</div></div>
+            <div class="kpi-box"><div class="label">Total Expenses</div><div class="value" style="color:#F87171">{fmt_dollar(total_exp)}/mo</div></div>
             <div class="kpi-box"><div class="label">Monthly Surplus</div><div class="value" style="color:{sr_color}">{fmt_dollar(surplus)}</div></div>
             <div class="kpi-box"><div class="label">Savings Rate</div><div class="value" style="color:{sr_color}">{sr:.1f}%</div></div>
         </div>
-        <p style="margin-top:1rem;font-size:0.9rem;color:#1A0A2E;font-weight:500;">{sr_msg}</p>
+        <p style="margin-top:1rem;font-size:0.9rem;color:#F0EBFF;font-weight:500;">{sr_msg}</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1345,11 +1253,11 @@ def step_emergency():
     gap_6mo     = max(0, target_6mo - ef)
 
     if months_covered >= 6:
-        color, tier = "#1E5C3A", "✅ Fully funded"
+        color, tier = "#4ADE80", "✅ Fully funded"
     elif months_covered >= 3:
-        color, tier = "#7A4F00", "⚠️ Partially funded"
+        color, tier = "#FCD34D", "⚠️ Partially funded"
     else:
-        color, tier = "#8B1A1A", "🚨 Underfunded"
+        color, tier = "#F87171", "🚨 Underfunded"
 
     can_cover_400 = "✅ Yes" if ef >= 400 else "❌ No"
     can_cover_2k  = "✅ Yes" if ef >= 2000 else "❌ No"
@@ -1365,10 +1273,10 @@ def step_emergency():
         <div style="margin-top:1rem;font-size:0.88rem;">
             <strong>{tier}</strong>
             {"" if months_covered >= 6
-             else f" — Gap to 3-month minimum: <strong style='color:#8B1A1A'>{fmt_dollar(gap_3mo)}</strong>" if months_covered < 3
-             else f" — Gap to 6-month goal: <strong style='color:#7A4F00'>{fmt_dollar(gap_6mo)}</strong>"}
+             else f" — Gap to 3-month minimum: <strong style='color:#F87171'>{fmt_dollar(gap_3mo)}</strong>" if months_covered < 3
+             else f" — Gap to 6-month goal: <strong style='color:#FCD34D'>{fmt_dollar(gap_6mo)}</strong>"}
         </div>
-        <div style="margin-top:0.75rem;font-size:0.85rem;color:#3D2C5C;">
+        <div style="margin-top:0.75rem;font-size:0.85rem;color:#D4C8F0;">
             Cover $400 emergency: <strong>{can_cover_400}</strong>
             &nbsp;|&nbsp; Cover $2,000 emergency: <strong>{can_cover_2k}</strong>
         </div>
@@ -1377,7 +1285,7 @@ def step_emergency():
 
     # Progress bar
     metric_bar("Progress toward 6-month goal", min(months_covered, 6), 6,
-               color="#1E5C3A" if months_covered >= 6 else "#7A4F00" if months_covered >= 3 else "#8B1A1A",
+               color="#4ADE80" if months_covered >= 6 else "#FCD34D" if months_covered >= 3 else "#F87171",
                suffix=" months")
 
     if months_covered < 3:
@@ -1456,13 +1364,13 @@ def step_retirement():
     gap_now     = goal_now - ret_saved
     gap_proj    = goal_ret - projected
 
-    color_now  = "#1E5C3A" if ret_saved >= goal_now  else "#8B1A1A"
-    color_proj = "#1E5C3A" if projected  >= goal_ret else "#8B1A1A"
+    color_now  = "#4ADE80" if ret_saved >= goal_now  else "#F87171"
+    color_proj = "#4ADE80" if projected  >= goal_ret else "#F87171"
 
     st.markdown(f"""
     <div class="card card-blue">
         <strong>Your Fidelity Milestone (Prescriptive — What You Need)</strong><br>
-        <span style="font-size:0.85rem;color:#3D1A5C;">
+        <span style="font-size:0.85rem;color:#C084FC;">
         Goal at your age ({age}): <strong>{mult_now:.1f}× salary = {fmt_dollar(goal_now)}</strong><br>
         Goal at retirement ({ret_age}): <strong>{mult_at_ret:.1f}× salary = {fmt_dollar(goal_ret)}</strong>
         </span>
@@ -1519,7 +1427,7 @@ def step_retirement():
                 <div class="value">{years_left}</div>
             </div>
         </div>
-        <p style="font-size:0.78rem;color:#5E4D78;margin-top:0.75rem;">
+        <p style="font-size:0.78rem;color:#A89BC2;margin-top:0.75rem;">
             ⚠️ Projection assumes constant {ret_return:.1f}% return and consistent contributions.
             Actual returns vary. This does not account for inflation (~3%/year), taxes on withdrawals,
             or Social Security income. Consult a CFP® for personalized projections.
@@ -1548,7 +1456,7 @@ def step_retirement():
     rows2 = ""
     for ag, med in SCF_RET.items():
         hl = ' class="highlight"' if ag == bracket else ""
-        rows2 += f'<tr{hl}><td>{"▶ " if ag==bracket else ""}{ag}</td><td>{fmt_dollar(med)}</td><td style="font-size:0.78rem;color:#5E4D78;">What peers have — not a sufficiency target</td></tr>'
+        rows2 += f'<tr{hl}><td>{"▶ " if ag==bracket else ""}{ag}</td><td>{fmt_dollar(med)}</td><td style="font-size:0.78rem;color:#A89BC2;">What peers have — not a sufficiency target</td></tr>'
     st.markdown(f"""
     <table class="bench-table">
         <thead><tr><th>Age Group</th><th>Median Retirement Savings</th><th>Note</th></tr></thead>
@@ -1614,10 +1522,10 @@ def step_action_plan():
 
     # ── Snapshot ──────────────────────────────
     st.markdown("#### 📊 Your Financial Snapshot")
-    ef_color  = "#1E5C3A" if ef_months >= 6 else "#7A4F00" if ef_months >= 3 else "#8B1A1A"
-    sr_color  = "#1E5C3A" if sr >= 15 else "#7A4F00" if sr >= 10 else "#8B1A1A"
-    ret_color = "#1E5C3A" if projected >= goal_ret else "#8B1A1A"
-    cfpb_color= "#1E5C3A" if cfpb_score >= 61 else "#7A4F00" if cfpb_score >= 41 else "#8B1A1A"
+    ef_color  = "#4ADE80" if ef_months >= 6 else "#FCD34D" if ef_months >= 3 else "#F87171"
+    sr_color  = "#4ADE80" if sr >= 15 else "#FCD34D" if sr >= 10 else "#F87171"
+    ret_color = "#4ADE80" if projected >= goal_ret else "#F87171"
+    cfpb_color= "#4ADE80" if cfpb_score >= 61 else "#FCD34D" if cfpb_score >= 41 else "#F87171"
 
     st.markdown(f"""
     <div class="kpi-grid">
@@ -1635,7 +1543,7 @@ def step_action_plan():
         goal_html = "".join(f"<li>{g}</li>" for g in goals[:5])
         st.markdown(f"""
         <div class="card card-amber">
-            <ul style="margin:0;padding-left:1.2rem;font-size:0.9rem;color:#7A4F00;">{goal_html}</ul>
+            <ul style="margin:0;padding-left:1.2rem;font-size:0.9rem;color:#FCD34D;">{goal_html}</ul>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1805,7 +1713,7 @@ def step_action_plan():
     st.markdown("#### 🔗 Evidence-Based Resources")
     st.markdown("""
     <div class="card card-slate">
-        <ul style="margin:0;padding-left:1.2rem;font-size:0.88rem;color:#3D2C5C;line-height:2;">
+        <ul style="margin:0;padding-left:1.2rem;font-size:0.88rem;color:#D4C8F0;line-height:2;">
             <li>📊 <a href="https://www.consumerfinance.gov/consumer-tools/financial-well-being/" target="_blank">CFPB Financial Well-Being Tools</a> — validated assessment & planning resources</li>
             <li>🎓 <a href="https://www.smartaboutmoney.org" target="_blank">SmartAboutMoney.org (NEFE)</a> — free, research-based financial education</li>
             <li>🏛️ <a href="https://www.mymoney.gov" target="_blank">MyMoney.gov</a> — U.S. federal financial literacy portal</li>
