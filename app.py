@@ -178,8 +178,15 @@ DEFAULTS = {
     "age": 35, "salary": 60000, "ret_age": 67, "region": "National Average",
     # Goals
     "goals": [],
-    # CFPB Well-Being (10 items, 1-5 scale)
-    "cfpb": {f"q{i}": 3 for i in range(1, 11)},
+    # CFPB Well-Being (10 items, stored as score values with _score suffix)
+    # Default: middle option for each item
+    "cfpb": {f"q{i+1}_score": v[2] for i, (_, _, v) in enumerate([
+        ("", "agree", [4,3,2,1,0]), ("", "agree", [4,3,2,1,0]),
+        ("", "agree", [0,1,2,3,4]), ("", "agree", [4,3,2,1,0]),
+        ("", "agree", [0,1,2,3,4]), ("", "agree", [0,1,2,3,4]),
+        ("", "freq",  [0,1,2,3,4]), ("", "freq",  [4,3,2,1,0]),
+        ("", "freq",  [0,1,2,3,4]), ("", "freq",  [0,1,2,3,4]),
+    ])},
     # Confidence (8 areas)
     "conf": {
         "daily": 3, "emergency": 3, "saving": 3, "investing": 3,
@@ -264,14 +271,45 @@ def fidelity_multiple(age):
             return FIDELITY_MULT[a0] + frac * (FIDELITY_MULT[a1] - FIDELITY_MULT[a0])
     return 10
 
-def cfpb_raw_to_score(raw_total):
+def cfpb_raw_to_score(raw_total, age=None):
     """
-    CFPB 10-item scale, each 1-5.
-    Items 1,2,3,4,5 are forward scored; 6,7,8,9,10 are reverse scored.
-    Raw range: 10-50. Map to 0-100 scale per CFPB scoring tables.
-    Approximate linear mapping: score = (raw - 10) / 40 * 100
+    Official CFPB lookup table (self-administered questionnaire).
+    Raw response value range: 0–40.
+    Scores differ for age 18–61 vs. 62+.
+    Source: CFPB Financial Well-Being Scale Scoring Worksheet (2017).
     """
-    return round(max(0, min(100, (raw_total - 10) / 40 * 100)))
+    # {raw: (score_18_61, score_62_plus)}
+    LOOKUP = {
+        0:  (14, 14),  1:  (19, 20),  2:  (22, 24),  3:  (25, 26),
+        4:  (27, 29),  5:  (29, 31),  6:  (31, 33),  7:  (32, 35),
+        8:  (34, 36),  9:  (35, 38), 10:  (37, 39), 11:  (38, 41),
+        12: (40, 42), 13:  (41, 44), 14:  (42, 45), 15:  (44, 46),
+        16: (45, 48), 17:  (46, 49), 18:  (47, 50), 19:  (49, 52),
+        20: (50, 53), 21:  (51, 54), 22:  (52, 56), 23:  (54, 57),
+        24: (55, 58), 25:  (56, 60), 26:  (58, 61), 27:  (59, 63),
+        28: (60, 64), 29:  (62, 66), 30:  (63, 67), 31:  (65, 69),
+        32: (66, 71), 33:  (68, 73), 34:  (69, 75), 35:  (71, 77),
+        36: (73, 79), 37:  (75, 82), 38:  (78, 84), 39:  (81, 88),
+        40: (86, 95),
+    }
+    r = max(0, min(40, int(raw_total)))
+    s_young, s_older = LOOKUP.get(r, (50, 50))
+    if age is not None and age >= 62:
+        return s_older
+    return s_young
+
+def cfpb_age_median(age):
+    """
+    CFPB (2017) Financial Well-Being in America — median scores by age group.
+    Self-administered. Source: Table 1, CFPB Financial Well-Being in America report.
+    """
+    if age < 25:  return 51
+    if age < 35:  return 52
+    if age < 45:  return 54
+    if age < 55:  return 54
+    if age < 62:  return 55
+    if age < 70:  return 59
+    return 62
 
 def monthly_expenses():
     exp = ss("exp")
@@ -347,24 +385,47 @@ GOAL_CATS = {
 
 # ─────────────────────────────────────────────
 # CFPB QUESTIONS (validated 10-item scale)
+# Official wording from CFPB Financial Well-Being Scale Questionnaire (2017)
 # ─────────────────────────────────────────────
-CFPB_FREQ = ["Never", "Rarely", "Sometimes", "Often", "Always"]
-CFPB_AGREE = ["Not at all", "Very little", "Somewhat", "Very well", "Completely"]
 
+# Part 1 response options (left→right on paper = Completely→Not at all)
+# We present them left-to-right: Completely, Very well, Somewhat, Very little, Not at all
+CFPB_AGREE_OPTS  = ["Completely", "Very well", "Somewhat", "Very little", "Not at all"]
+# Scored values for Part 1 (forward): Completely=4, Very well=3, Somewhat=2, Very little=1, Not at all=0
+CFPB_AGREE_FWD   = [4, 3, 2, 1, 0]
+# Scored values for Part 1 (reverse): Completely=0, Very well=1, Somewhat=2, Very little=3, Not at all=4
+CFPB_AGREE_REV   = [0, 1, 2, 3, 4]
+
+# Part 2 response options
+CFPB_FREQ_OPTS   = ["Always", "Often", "Sometimes", "Rarely", "Never"]
+# Scored values for Part 2 (forward): Always=4, Often=3, Sometimes=2, Rarely=1, Never=0
+CFPB_FREQ_FWD    = [4, 3, 2, 1, 0]
+# Scored values for Part 2 (reverse): Always=0, Often=1, Sometimes=2, Rarely=3, Never=4
+CFPB_FREQ_REV    = [0, 1, 2, 3, 4]
+
+# (statement_text, part, score_values_list)
+# part = "agree" → Part 1 options; part = "freq" → Part 2 options
 CFPB_ITEMS = [
-    # (text, response_type, reverse_scored)
-    ("I could handle a major unexpected expense.",               "agree",  False),
-    ("I am securing my financial future.",                       "agree",  False),
+    ("I could handle a major unexpected expense.",
+     "agree", CFPB_AGREE_FWD),
+    ("I am securing my financial future.",
+     "agree", CFPB_AGREE_FWD),
     ("Because of my money situation, I feel like I will never have the things I want in life.",
-                                                                 "agree",  True),
-    ("I can enjoy life because of the way I'm managing my money.", "agree", False),
-    ("I am just getting by financially.",                        "agree",  True),
-    ("I am concerned that the money I have or will save won't last.", "agree", True),
+     "agree", CFPB_AGREE_REV),
+    ("I can enjoy life because of the way I'm managing my money.",
+     "agree", CFPB_AGREE_FWD),
+    ("I am just getting by financially.",
+     "agree", CFPB_AGREE_REV),
+    ("I am concerned that the money I have or will save won't last.",
+     "agree", CFPB_AGREE_REV),
     ("Giving a gift for a wedding, birthday, or other occasion would put a strain on my finances for the month.",
-                                                                 "freq",   True),
-    ("I have money left over at the end of the month.",          "freq",   False),
-    ("I am behind with my finances.",                            "freq",   True),
-    ("My finances control my life.",                             "freq",   True),
+     "freq",  CFPB_FREQ_REV),
+    ("I have money left over at the end of the month.",
+     "freq",  CFPB_FREQ_FWD),
+    ("I am behind with my finances.",
+     "freq",  CFPB_FREQ_REV),
+    ("My finances control my life.",
+     "freq",  CFPB_FREQ_REV),
 ]
 
 # ─────────────────────────────────────────────
@@ -597,127 +658,318 @@ def step_goals():
 
 # ─────────────────────────────────────────────
 # STEP 3 — CFPB WELL-BEING SCALE
+# Instrument layout matches the official CFPB questionnaire format.
+# Score is NOT shown here — it reveals on the next step.
 # ─────────────────────────────────────────────
 def step_cfpb():
     render_header(); render_progress()
-    st.markdown('<p class="step-title">CFPB Financial Well-Being Scale</p>', unsafe_allow_html=True)
+
+    st.markdown('<p class="step-title">Financial Well-Being Scale</p>', unsafe_allow_html=True)
     st.markdown("""
     <p class="step-subtitle">
-        The Consumer Financial Protection Bureau developed this validated 10-item instrument to measure
-        financial well-being across four dimensions: daily control, shock absorption, goal progress, and life enjoyment.
+        This 10-question scale was developed by the Consumer Financial Protection Bureau (CFPB)
+        to measure financial well-being. Answer every question honestly — there are no right or wrong answers.
+        Your score will appear on the next page.
     </p>
     """, unsafe_allow_html=True)
 
+    # Extra CSS for the instrument table layout
     st.markdown("""
-    <div class="card card-blue">
-        <strong>Instructions:</strong> For each statement, select the response that best describes your situation.
-        There are no right or wrong answers — honest responses produce the most useful feedback.
+    <style>
+    .cfpb-section-header {
+        background: #1e3a5f;
+        color: white;
+        border-radius: 10px 10px 0 0;
+        padding: 0.9rem 1.2rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0;
+    }
+    .cfpb-col-headers {
+        display: grid;
+        align-items: center;
+        background: #e8eef5;
+        padding: 0.6rem 1.2rem;
+        border-left: 1px solid #cbd5e1;
+        border-right: 1px solid #cbd5e1;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #1e3a5f;
+        text-align: center;
+        gap: 6px;
+    }
+    .cfpb-col-headers-p1 { grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; }
+    .cfpb-col-headers-p2 { grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; }
+    .cfpb-col-headers span:first-child { text-align: left; }
+
+    .cfpb-row {
+        display: grid;
+        align-items: center;
+        padding: 0.75rem 1.2rem;
+        border-left: 1px solid #cbd5e1;
+        border-right: 1px solid #cbd5e1;
+        border-bottom: 1px solid #e2e8f0;
+        gap: 6px;
+        background: white;
+        font-size: 0.9rem;
+        color: #1e293b;
+    }
+    .cfpb-row-p1 { grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; }
+    .cfpb-row-p2 { grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; }
+    .cfpb-row:last-child { border-radius: 0 0 10px 10px; border-bottom: 1px solid #cbd5e1; }
+    .cfpb-row:nth-child(even) { background: #f8fafc; }
+
+    /* Hide radio label, show only circle */
+    div[data-testid="stRadio"] > label { display: none; }
+    div[data-testid="stRadio"] > div {
+        display: flex;
+        justify-content: space-around;
+        gap: 0;
+    }
+    div[data-testid="stRadio"] > div > label {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        cursor: pointer;
+    }
+    div[data-testid="stRadio"] > div > label > div:first-child { display: none; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    cfpb = {k: v for k, v in ss("cfpb").items()}  # copy
+
+    # ── Part 1 ───────────────────────────────
+    st.markdown("""
+    <div class="cfpb-section-header">
+        Part 1 &nbsp;|&nbsp; How well does this statement describe you or your situation?
+    </div>
+    <div class="cfpb-col-headers cfpb-col-headers-p1">
+        <span>This statement describes me…</span>
+        <span>Completely</span>
+        <span>Very well</span>
+        <span>Somewhat</span>
+        <span>Very little</span>
+        <span>Not at all</span>
     </div>
     """, unsafe_allow_html=True)
 
-    cfpb = ss("cfpb")
-    raw = 0
+    part1_items = [(i, t, s) for i, (t, p, s) in enumerate(CFPB_ITEMS, 1) if p == "agree"]
 
-    for idx, (text, rtype, reverse) in enumerate(CFPB_ITEMS, 1):
-        opts = CFPB_AGREE if rtype == "agree" else CFPB_FREQ
-        current_val = cfpb.get(f"q{idx}", 3)
-        current_idx = current_val - 1
+    for idx, text, score_vals in part1_items:
+        col_stmt, c1, c2, c3, c4, c5 = st.columns([2, 1, 1, 1, 1, 1])
+        with col_stmt:
+            st.markdown(f"<div style='padding:0.4rem 0;font-size:0.9rem;'>{idx}. {text}</div>",
+                        unsafe_allow_html=True)
+        # current index: find which option was previously selected
+        current_score = cfpb.get(f"q{idx}_score", score_vals[2])  # default Somewhat/Sometimes
+        try:
+            cur_idx = score_vals.index(current_score)
+        except ValueError:
+            cur_idx = 2
 
-        st.markdown(f"**{idx}. {text}**")
-        choice = st.radio(
-            label=f"q{idx}",
-            options=opts,
-            index=current_idx,
-            horizontal=True,
-            label_visibility="collapsed",
-            key=f"cfpb_q{idx}",
-        )
-        val = opts.index(choice) + 1
-        cfpb[f"q{idx}"] = val
-        if reverse:
-            raw += (6 - val)
+        radio_cols = [c1, c2, c3, c4, c5]
+        chosen = None
+        for opt_i, (col, opt_label) in enumerate(zip(radio_cols, CFPB_AGREE_OPTS)):
+            with col:
+                selected = st.radio(
+                    label=f"q{idx}_opt{opt_i}",
+                    options=[opt_label],
+                    index=0 if opt_i == cur_idx else None,
+                    key=f"cfpb_{idx}_{opt_i}",
+                    label_visibility="collapsed",
+                )
+                if selected:
+                    chosen = opt_i
+
+        if chosen is not None:
+            cfpb[f"q{idx}_score"] = score_vals[chosen]
         else:
-            raw += val
+            cfpb[f"q{idx}_score"] = score_vals[cur_idx]
+
+    # ── Part 2 ───────────────────────────────
+    st.markdown("""
+    <div class="cfpb-section-header" style="margin-top:1.5rem;">
+        Part 2 &nbsp;|&nbsp; How often does this statement apply to you?
+    </div>
+    <div class="cfpb-col-headers cfpb-col-headers-p2">
+        <span>This statement applies to me…</span>
+        <span>Always</span>
+        <span>Often</span>
+        <span>Sometimes</span>
+        <span>Rarely</span>
+        <span>Never</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    part2_items = [(i, t, s) for i, (t, p, s) in enumerate(CFPB_ITEMS, 1) if p == "freq"]
+
+    for idx, text, score_vals in part2_items:
+        col_stmt, c1, c2, c3, c4, c5 = st.columns([2, 1, 1, 1, 1, 1])
+        with col_stmt:
+            st.markdown(f"<div style='padding:0.4rem 0;font-size:0.9rem;'>{idx}. {text}</div>",
+                        unsafe_allow_html=True)
+        current_score = cfpb.get(f"q{idx}_score", score_vals[2])
+        try:
+            cur_idx = score_vals.index(current_score)
+        except ValueError:
+            cur_idx = 2
+
+        radio_cols = [c1, c2, c3, c4, c5]
+        chosen = None
+        for opt_i, (col, opt_label) in enumerate(zip(radio_cols, CFPB_FREQ_OPTS)):
+            with col:
+                selected = st.radio(
+                    label=f"q{idx}_opt{opt_i}",
+                    options=[opt_label],
+                    index=0 if opt_i == cur_idx else None,
+                    key=f"cfpb_{idx}_{opt_i}",
+                    label_visibility="collapsed",
+                )
+                if selected:
+                    chosen = opt_i
+
+        if chosen is not None:
+            cfpb[f"q{idx}_score"] = score_vals[chosen]
+        else:
+            cfpb[f"q{idx}_score"] = score_vals[cur_idx]
 
     ss_set("cfpb", cfpb)
-    score = cfpb_raw_to_score(raw)
-
-    if score >= 61:
-        color, tier, msg = "#22c55e", "High well-being", (
-            "You report relatively high financial well-being. You feel in control, "
-            "can absorb shocks, and are on track toward your goals. Focus on maintaining "
-            "good habits and building on this strong foundation."
-        )
-    elif score >= 41:
-        color, tier, msg = "#f59e0b", "Moderate well-being", (
-            "You report moderate financial well-being — common among working-age Americans. "
-            "Some areas feel manageable while others cause stress. The action plan in the final "
-            "step will help you identify high-impact improvements."
-        )
-    else:
-        color, tier, msg = "#ef4444", "Lower well-being", (
-            "You report lower financial well-being. This is more common than people realize and "
-            "is often driven by specific, addressable gaps (debt load, income volatility, lack of "
-            "emergency savings). The action plan will prioritize your most critical needs."
-        )
-
-    st.markdown(f"""
-    <div class="card" style="border-left:4px solid {color};background:#fafafa;margin-top:1.5rem;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-                <div style="font-size:0.8rem;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;">Your CFPB Score</div>
-                <div style="font-size:3rem;font-weight:800;color:{color};line-height:1;">{score}</div>
-                <div style="font-size:0.85rem;color:#475569;">out of 100 · <strong>{tier}</strong></div>
-            </div>
-            <div style="width:120px;text-align:center;">
-                <div style="font-size:0.7rem;color:#94a3b8;margin-bottom:4px;">U.S. Adult Median: ~54</div>
-                <div style="font-size:0.7rem;color:#94a3b8;">Your age group median: ~51–58</div>
-            </div>
-        </div>
-        <p style="font-size:0.88rem;color:#475569;margin-top:1rem;">{msg}</p>
-        <p style="font-size:0.78rem;color:#94a3b8;margin-top:0.5rem;">
-            Note: Scores range from 0–100. The median U.S. adult scores approximately 54.
-            Well-being is best understood as progress over time, not a fixed target.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Benchmark table
-    st.markdown("""
-    <table class="bench-table">
-        <thead><tr><th>Score Range</th><th>Well-Being Level</th><th>% of U.S. Adults</th></tr></thead>
-        <tbody>
-            <tr><td>61–100</td><td>High financial well-being</td><td>~34%</td></tr>
-            <tr><td>41–60</td><td>Moderate financial well-being</td><td>~46%</td></tr>
-            <tr><td>0–40</td><td>Lower financial well-being</td><td>~20%</td></tr>
-        </tbody>
-    </table>
-    """, unsafe_allow_html=True)
 
     st.markdown("""
-    <div class="citation">
-        <strong>Source:</strong><br>
-        Consumer Financial Protection Bureau. (2017). <em>CFPB Financial Well-Being Scale: Scale development technical report.</em>
+    <div class="citation" style="margin-top:1.5rem;">
+        <strong>Source:</strong> Consumer Financial Protection Bureau. (2017). <em>CFPB Financial Well-Being Scale: Scale development technical report.</em>
         <a href="https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-scale/">
-        https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-scale/</a><br><br>
-        Median benchmark from: Consumer Financial Protection Bureau. (2017). <em>Financial well-being in America.</em>
-        <a href="https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-in-america/">
-        https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-in-america/</a>
+        https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-scale/</a>
+        &nbsp;·&nbsp; Questions reproduced verbatim per CFPB public use guidelines.
+        &nbsp;·&nbsp; Scored using the official CFPB lookup table for self-administered questionnaires.
     </div>
     """, unsafe_allow_html=True)
 
-    nav_buttons()
+    nav_buttons(next_label="See My Score →")
+
+
+def _compute_cfpb_score():
+    """Compute raw total and convert using official CFPB lookup table."""
+    cfpb = ss("cfpb")
+    raw = sum(cfpb.get(f"q{i+1}_score", v[2]) for i, (_, _, v) in enumerate(CFPB_ITEMS))
+    return cfpb_raw_to_score(raw, age=ss("age")), raw
+
 
 # ─────────────────────────────────────────────
-# STEP 4 — FINANCIAL CONFIDENCE
+# STEP 4 — FINANCIAL CONFIDENCE (+ CFPB score reveal)
 # ─────────────────────────────────────────────
 def step_confidence():
     render_header(); render_progress()
-    st.markdown('<p class="step-title">Financial Confidence Assessment</p>', unsafe_allow_html=True)
+
+    # ── CFPB Score Reveal ────────────────────
+    score, raw = _compute_cfpb_score()
+    age        = ss("age")
+    peer_med   = cfpb_age_median(age)
+
+    if age < 25:    age_label = "18–24"
+    elif age < 35:  age_label = "25–34"
+    elif age < 45:  age_label = "35–44"
+    elif age < 55:  age_label = "45–54"
+    elif age < 62:  age_label = "55–61"
+    elif age < 70:  age_label = "62–69"
+    else:           age_label = "70+"
+
+    if score >= 61:
+        sc_color = "#22c55e"
+        sc_tier  = "High financial well-being"
+        sc_msg   = ("You report relatively high financial well-being. You feel in control of your day-to-day finances, "
+                    "can absorb financial shocks, and are on track toward your goals. Focus on maintaining "
+                    "these habits and building on your strong foundation.")
+    elif score >= 41:
+        sc_color = "#f59e0b"
+        sc_tier  = "Moderate financial well-being"
+        sc_msg   = ("You report moderate financial well-being — the most common range for working-age Americans. "
+                    "Some areas feel manageable while others create stress. The personalized action plan "
+                    "at the end of this assessment will highlight the highest-impact improvements.")
+    else:
+        sc_color = "#ef4444"
+        sc_tier  = "Lower financial well-being"
+        sc_msg   = ("You report lower financial well-being. This is more common than many people realize and is often "
+                    "driven by specific, addressable gaps — such as high debt load, income volatility, or lack of "
+                    "emergency savings. Your action plan will prioritize the most critical next steps.")
+
+    diff     = score - peer_med
+    diff_txt = (f"<strong style='color:#22c55e'>+{diff} above</strong>" if diff > 0
+                else f"<strong style='color:#ef4444'>{diff} below</strong>" if diff < 0
+                else "<strong>equal to</strong>")
+
+    # Score gauge bar
+    gauge_pct = score  # 0–100
+    st.markdown(f"""
+    <div class="card" style="border-left:4px solid {sc_color};background:#fafafa;padding:1.5rem 2rem;">
+        <div style="font-size:0.75rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.25rem;">
+            Your CFPB Financial Well-Being Score
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:1rem;flex-wrap:wrap;">
+            <div style="font-size:4.5rem;font-weight:800;color:{sc_color};line-height:1;">{score}</div>
+            <div style="flex:1;min-width:180px;">
+                <div style="font-size:0.9rem;font-weight:600;color:#1e293b;">{sc_tier}</div>
+                <div style="font-size:0.82rem;color:#64748b;margin-top:2px;">out of 100 &nbsp;·&nbsp; Raw total: {raw}/40</div>
+                <div style="font-size:0.82rem;color:#475569;margin-top:4px;">
+                    {diff_txt} the median for U.S. adults ages {age_label} (median: {peer_med})
+                </div>
+            </div>
+        </div>
+
+        <!-- Gauge bar -->
+        <div style="margin-top:1rem;">
+            <div style="position:relative;height:18px;background:#e2e8f0;border-radius:99px;overflow:hidden;">
+                <div style="width:{gauge_pct}%;height:100%;background:linear-gradient(90deg,#ef4444 0%,#f59e0b 40%,#22c55e 70%);border-radius:99px;transition:width 0.5s;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:#94a3b8;margin-top:4px;">
+                <span>0 — Lower</span><span>40</span><span>Moderate — 60</span><span>80</span><span>Higher — 100</span>
+            </div>
+        </div>
+
+        <p style="font-size:0.88rem;color:#475569;margin-top:1rem;line-height:1.55;">{sc_msg}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Age-group comparison table
+    st.markdown("**How scores compare across age groups** *(CFPB National Survey, 2017)*")
+    AGE_MEDIANS = [
+        ("18–24", 51), ("25–34", 52), ("35–44", 54),
+        ("45–54", 54), ("55–61", 55), ("62–69", 59), ("70+", 62),
+    ]
+    rows = ""
+    for ag, med in AGE_MEDIANS:
+        hl = ' class="highlight"' if ag == age_label else ""
+        you_col = (f"<strong style='color:{sc_color}'>{score} (you)</strong>"
+                   if ag == age_label else "")
+        rows += f"<tr{hl}><td>{'▶ ' if ag==age_label else ''}{ag}</td><td style='text-align:center'>{med}</td><td style='text-align:center'>{you_col}</td></tr>"
+
+    st.markdown(f"""
+    <table class="bench-table">
+        <thead>
+            <tr>
+                <th>Age Group</th>
+                <th style="text-align:center">Median Score</th>
+                <th style="text-align:center">Your Score</th>
+            </tr>
+        </thead>
+        <tbody>{rows}</tbody>
+    </table>
+    <p style="font-size:0.78rem;color:#94a3b8;margin-top:0.5rem;">
+        Scores are produced using the CFPB official lookup table adjusted for age and self-administration.
+        Financial well-being is best understood as progress over time — not a fixed pass/fail threshold.
+    </p>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<hr class='divider'>", unsafe_allow_html=True)
+
+    # ── Financial Confidence ─────────────────
+    st.markdown('<p class="step-title">Financial Confidence</p>', unsafe_allow_html=True)
     st.markdown("""
     <p class="step-subtitle">
         Rate your confidence in each area from 1 (Not confident) to 5 (Very confident).
-        Research shows that both overconfidence and underconfidence can impair financial decision-making.
+        Research shows that both overconfidence and underconfidence impair financial decision-making.
     </p>
     """, unsafe_allow_html=True)
 
@@ -746,22 +998,26 @@ def step_confidence():
     avg = sum(conf.values()) / len(conf)
     low_areas = [CONF_AREAS[k] for k, v in conf.items() if v <= 2]
 
-    color = "#22c55e" if avg >= 4 else "#f59e0b" if avg >= 3 else "#ef4444"
+    conf_color = "#22c55e" if avg >= 4 else "#f59e0b" if avg >= 3 else "#ef4444"
     st.markdown(f"""
-    <div class="card" style="border-left:4px solid {color};margin-top:1.5rem;">
+    <div class="card" style="border-left:4px solid {conf_color};margin-top:1.5rem;">
         <strong>Average Confidence: {avg:.1f} / 5</strong><br>
         <span style="font-size:0.88rem;color:#475569;">
         {"Strong overall confidence — maintain and build on it." if avg >= 4
          else "Moderate confidence — target low-rated areas for education or professional advice." if avg >= 3
-         else "Several areas need attention — consider seeking financial education or guidance."}
+         else "Several areas need attention — consider financial education or professional guidance."}
         </span>
-        {"<br><br><strong style='color:#b91c1c'>Areas rated ≤2 (priority for improvement):</strong><ul style='font-size:0.85rem;color:#b91c1c;margin:0.3rem 0 0;padding-left:1.2rem;'>" + "".join(f"<li>{a}</li>" for a in low_areas) + "</ul>" if low_areas else ""}
+        {"<br><br><strong style='color:#b91c1c'>Areas rated ≤ 2 (priority for improvement):</strong><ul style='font-size:0.85rem;color:#b91c1c;margin:0.3rem 0 0;padding-left:1.2rem;'>" + "".join(f"<li>{a}</li>" for a in low_areas) + "</ul>" if low_areas else ""}
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("""
     <div class="citation">
-        <strong>Source:</strong><br>
+        <strong>Sources:</strong><br>
+        Consumer Financial Protection Bureau. (2017). <em>Financial well-being in America.</em>
+        <a href="https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-in-america/">
+        https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-in-america/</a>
+        (age-group median scores, Table 1)<br>
         Parker, A. M., de Bruin, W. B., Yoong, J., &amp; Willis, R. (2012). Inappropriate confidence and retirement planning:
         Four studies with a national sample. <em>Journal of Behavioral Decision Making, 25</em>(4), 382–389.
         <a href="https://doi.org/10.1002/bdm.745">https://doi.org/10.1002/bdm.745</a>
@@ -1257,12 +1513,7 @@ def step_action_plan():
     mult_ret    = fidelity_multiple(ret_age)
     goal_ret    = mult_ret * salary
     goals       = ss("goals")
-    cfpb_raw    = sum(
-        (6 - v) if CFPB_ITEMS[i][2] else v
-        for i, (_, _, _) in enumerate(CFPB_ITEMS)
-        for v in [ss("cfpb").get(f"q{i+1}", 3)]
-    )
-    cfpb_score  = cfpb_raw_to_score(cfpb_raw)
+    cfpb_score, _ = _compute_cfpb_score()
     conf        = ss("conf")
     avg_conf    = sum(conf.values()) / len(conf)
     nw_data     = ss("nw")
