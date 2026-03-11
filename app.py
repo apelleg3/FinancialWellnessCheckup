@@ -27,9 +27,40 @@ st.markdown("""
 
 /* ── Works with Streamlit dark mode — DO NOT override color-scheme ────────── */
 
-/* Typography */
+/* ── TYPOGRAPHY — consistent serif headings, sans body ─────────────────── */
 html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
-h1, h2, h3 { font-family: 'DM Serif Display', serif; letter-spacing: -0.02em; }
+
+/* All heading levels get serif */
+h1, h2, h3, h4, h5,
+[data-testid="stMarkdownContainer"] h1,
+[data-testid="stMarkdownContainer"] h2,
+[data-testid="stMarkdownContainer"] h3,
+[data-testid="stMarkdownContainer"] h4,
+.step-title {
+    font-family: 'DM Serif Display', serif !important;
+    letter-spacing: -0.01em;
+}
+/* h4 size and color */
+[data-testid="stMarkdownContainer"] h4,
+h4 {
+    font-size: 1.15rem !important;
+    color: #F0EBFF !important;
+    margin-bottom: 0.5rem !important;
+}
+/* Bold text stays sans-serif (it's body copy, not headings) */
+[data-testid="stMarkdownContainer"] strong {
+    font-family: 'DM Sans', sans-serif !important;
+    font-weight: 600;
+}
+/* Labels on inputs use sans-serif */
+[data-testid="stNumberInput"] label,
+[data-testid="stSelectbox"] label,
+[data-testid="stSlider"] label,
+[data-testid="stTextInput"] label,
+[data-testid="stRadio"] label {
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 0.9rem !important;
+}
 
 /* Layout */
 #MainMenu {visibility: hidden;}
@@ -679,63 +710,56 @@ def step_goals():
 
     # ── Custom "Other" goals ─────────────────────────────────────────────────
     st.markdown("**Other / Custom Goals**")
-    st.caption("Type in any goal not listed above. Select the time horizon and it will be included in your plan.")
-
-    custom_goals = ss("custom_goals")  # list of {"text": str, "horizon": str}
+    st.caption("Type a goal not listed above, choose a time horizon, then click + Add.")
 
     HORIZONS = ["Short-term (0–2 yrs)", "Medium-term (3–5 yrs)", "Long-term (5+ yrs)"]
 
-    # Display existing custom goals with delete option
+    # Add row FIRST (avoids key conflicts after rerun)
+    col_new, col_hz_new, col_add = st.columns([3, 2, 1])
+    with col_new:
+        # No value= param — lets Streamlit preserve what the user typed across reruns
+        new_goal_text = st.text_input(
+            "New custom goal", key="new_custom_goal_text",
+            label_visibility="collapsed", placeholder="Type a new goal here…"
+        )
+    with col_hz_new:
+        new_goal_hz = st.selectbox(
+            "New goal horizon", HORIZONS,
+            key="new_custom_goal_hz", label_visibility="collapsed"
+        )
+    with col_add:
+        st.markdown("<div style='margin-top:0.35rem'></div>", unsafe_allow_html=True)
+        if st.button("＋ Add", key="add_custom_goal"):
+            txt = (st.session_state.get("new_custom_goal_text") or "").strip()
+            if txt:
+                updated = ss("custom_goals") + [{"text": txt, "horizon": st.session_state.get("new_custom_goal_hz", HORIZONS[0])}]
+                ss_set("custom_goals", updated)
+                # Clear the input field
+                st.session_state["new_custom_goal_text"] = ""
+                st.rerun()
+
+    # Display + edit existing custom goals
+    custom_goals = ss("custom_goals")
     kept_customs = []
     for i, cg in enumerate(custom_goals):
         col_txt, col_hz, col_del = st.columns([3, 2, 1])
         with col_txt:
             new_text = st.text_input(
-                f"Custom goal {i+1}",
-                value=cg["text"],
-                key=f"custom_goal_text_{i}",
-                label_visibility="collapsed",
-                placeholder="Describe your goal…"
+                f"Custom goal {i+1}", value=cg["text"],
+                key=f"custom_goal_text_{i}", label_visibility="collapsed"
             )
         with col_hz:
             hz_idx = HORIZONS.index(cg["horizon"]) if cg["horizon"] in HORIZONS else 0
             new_hz = st.selectbox(
-                f"Horizon {i+1}",
-                HORIZONS,
-                index=hz_idx,
-                key=f"custom_goal_hz_{i}",
-                label_visibility="collapsed"
+                f"Horizon {i+1}", HORIZONS, index=hz_idx,
+                key=f"custom_goal_hz_{i}", label_visibility="collapsed"
             )
         with col_del:
             st.markdown("<div style='margin-top:0.35rem'></div>", unsafe_allow_html=True)
-            if st.button("✕", key=f"del_custom_{i}", help="Remove this goal"):
-                continue  # skip = delete
+            if st.button("✕", key=f"del_custom_{i}", help="Remove"):
+                continue
         if new_text.strip():
             kept_customs.append({"text": new_text.strip(), "horizon": new_hz})
-
-    # Add new custom goal row
-    col_new, col_hz_new, col_add = st.columns([3, 2, 1])
-    with col_new:
-        new_goal_text = st.text_input(
-            "New custom goal",
-            value="",
-            key="new_custom_goal_text",
-            label_visibility="collapsed",
-            placeholder="Type a new goal here…"
-        )
-    with col_hz_new:
-        new_goal_hz = st.selectbox(
-            "New goal horizon",
-            HORIZONS,
-            key="new_custom_goal_hz",
-            label_visibility="collapsed"
-        )
-    with col_add:
-        st.markdown("<div style='margin-top:0.35rem'></div>", unsafe_allow_html=True)
-        if st.button("＋ Add", key="add_custom_goal"):
-            if new_goal_text.strip():
-                kept_customs.append({"text": new_goal_text.strip(), "horizon": new_goal_hz})
-                st.rerun()
 
     ss_set("custom_goals", kept_customs)
 
@@ -1031,71 +1055,139 @@ def step_cfpb_score():
 
 
 # ─────────────────────────────────────────────
-# STEP 5 — FINANCIAL CONFIDENCE (standalone)
+# STEP 5 — FINANCIAL CONFIDENCE (one question at a time)
 # ─────────────────────────────────────────────
 def step_confidence():
     render_header(); render_progress()
     st.markdown('<p class="step-title">Financial Confidence</p>', unsafe_allow_html=True)
     st.markdown("""
     <p class="step-subtitle">
-        Rate your confidence in each area from 1 (Not at all confident) to 5 (Very confident).
-        Research shows both overconfidence and underconfidence impair financial decision-making.
+        Rate your confidence in each area. Research shows both overconfidence and
+        underconfidence impair financial decision-making (Parker et al., 2012).
     </p>
     """, unsafe_allow_html=True)
 
-    CONF_AREAS = {
-        "daily":      "Managing day-to-day finances",
-        "emergency":  "Planning for financial emergencies",
-        "saving":     "Saving consistently toward goals",
-        "investing":  "Understanding and using investments",
-        "retirement": "Planning for retirement",
-        "insurance":  "Evaluating insurance coverage",
-        "tax":        "Basic tax planning",
-        "estate":     "Estate planning (will, beneficiaries)",
-    }
+    CONF_AREAS = [
+        ("daily",      "Managing day-to-day finances",
+         "How confident are you in managing your monthly budget, tracking spending, and avoiding overdrafts?"),
+        ("emergency",  "Planning for financial emergencies",
+         "How confident are you in your ability to handle an unexpected expense of $1,000 or more?"),
+        ("saving",     "Saving consistently toward goals",
+         "How confident are you in setting aside money regularly toward specific financial goals?"),
+        ("investing",  "Understanding and using investments",
+         "How confident are you in choosing and managing investment accounts (401k, IRA, brokerage)?"),
+        ("retirement", "Planning for retirement",
+         "How confident are you that you are on track to maintain your standard of living in retirement?"),
+        ("insurance",  "Evaluating insurance coverage",
+         "How confident are you that your health, life, disability, and other insurance coverage is adequate?"),
+        ("tax",        "Basic tax planning",
+         "How confident are you in understanding your tax situation and using tax-advantaged accounts?"),
+        ("estate",     "Estate planning (will, beneficiaries)",
+         "How confident are you that your will, beneficiary designations, and estate documents are up to date?"),
+    ]
+    CONF_KEYS  = [c[0] for c in CONF_AREAS]
+    CONF_TOTAL = len(CONF_AREAS)
+
+    # Track which question the user is on
+    if "conf_q_idx" not in st.session_state:
+        st.session_state["conf_q_idx"] = 0
+    q_idx = st.session_state["conf_q_idx"]
+
     conf = ss("conf")
     options = ["1 – Not at all", "2 – Slightly", "3 – Moderately",
                "4 – Confident", "5 – Very confident"]
 
-    for key, label in CONF_AREAS.items():
-        current = conf.get(key, 3) - 1
-        st.markdown(f"**{label}**")
-        choice = st.radio(label, options=options, index=current, horizontal=True,
-                          label_visibility="collapsed", key=f"conf_{key}")
-        conf[key] = int(choice[0])
-        st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
-
-    ss_set("conf", conf)
-    avg = sum(conf.values()) / len(conf)
-    low_areas = [CONF_AREAS[k] for k, v in conf.items() if v <= 2]
-
-    conf_color = "#4ADE80" if avg >= 4 else "#FCD34D" if avg >= 3 else "#F87171"
-    low_html = ""
-    if low_areas:
-        items_html = "".join(f"<li style='color:#F87171'>{a}</li>" for a in low_areas)
-        low_html = f"<br><br><strong style='color:#F87171'>Areas rated ≤ 2 — consider targeted education or professional guidance:</strong><ul style='font-size:0.88rem;margin:0.4rem 0 0;padding-left:1.3rem;'>{items_html}</ul>"
-
+    # ── Progress within this step ─────────────────────────────────────────────
+    inner_pct = int((q_idx / CONF_TOTAL) * 100)
     st.markdown(f"""
-    <div class="card" style="border-left:5px solid {conf_color};margin-top:1.5rem;">
-        <div style="font-size:1rem;font-weight:700;color:#F0EBFF;">Average Confidence: {avg:.1f} / 5</div>
-        <div style="font-size:0.9rem;color:#D4C8F0;margin-top:0.4rem;">
-        {"Strong overall confidence — maintain and build on it." if avg >= 4
-         else "Moderate confidence — target lower-rated areas for education or professional advice." if avg >= 3
-         else "Several areas need attention — consider financial education or one-on-one guidance."}
+    <div style="margin-bottom:1.25rem;">
+        <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#A89BC2;margin-bottom:4px;">
+            <span>Question {q_idx + 1} of {CONF_TOTAL}</span>
+            <span>{inner_pct}% complete</span>
         </div>
-        {low_html}
+        <div style="background:#2A1D4E;border-radius:99px;height:6px;overflow:hidden;">
+            <div style="width:{inner_pct}%;height:100%;background:linear-gradient(90deg,#7C3AED,#C084FC);border-radius:99px;"></div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("""
-    <div class="citation">
-        Parker, A. M., de Bruin, W. B., Yoong, J., &amp; Willis, R. (2012). Inappropriate confidence and retirement planning:
-        Four studies with a national sample. <em>Journal of Behavioral Decision Making, 25</em>(4), 382–389.
-        <a href="https://doi.org/10.1002/bdm.745">https://doi.org/10.1002/bdm.745</a>
-    </div>
-    """, unsafe_allow_html=True)
+    if q_idx < CONF_TOTAL:
+        key, label, hint = CONF_AREAS[q_idx]
+        current = conf.get(key, 3) - 1
 
-    nav_buttons()
+        st.markdown(f"### {label}")
+        st.caption(hint)
+
+        choice = st.radio(
+            label, options=options, index=current, horizontal=True,
+            label_visibility="collapsed", key=f"conf_{key}_q"
+        )
+        conf[key] = int(choice[0])
+        ss_set("conf", conf)
+
+        st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
+
+        btn_col1, btn_col2 = st.columns([1, 1])
+        with btn_col1:
+            if q_idx > 0:
+                if st.button("← Previous", key="conf_prev", use_container_width=True):
+                    st.session_state["conf_q_idx"] = q_idx - 1
+                    st.rerun()
+        with btn_col2:
+            if st.button("Next →" if q_idx < CONF_TOTAL - 1 else "See Results →",
+                         key="conf_next", use_container_width=True):
+                st.session_state["conf_q_idx"] = min(CONF_TOTAL, q_idx + 1)
+                st.rerun()
+
+    if q_idx >= CONF_TOTAL:
+        # All answered — show summary and allow proceeding
+        avg = sum(conf.get(k, 3) for k in CONF_KEYS) / CONF_TOTAL
+        low_areas = [label for key, label, _ in CONF_AREAS if conf.get(key, 3) <= 2]
+
+        conf_color = "#4ADE80" if avg >= 4 else "#FCD34D" if avg >= 3 else "#F87171"
+        low_html = ""
+        if low_areas:
+            items_html = "".join(f"<li>{a}</li>" for a in low_areas)
+            low_html = f"""<br><br><strong style='color:#F87171'>Areas rated ≤ 2 — priority for improvement:</strong>
+            <ul style='font-size:0.88rem;color:#FCA5A5;margin:0.4rem 0 0;padding-left:1.3rem;'>{items_html}</ul>"""
+
+        st.markdown(f"""
+        <div class="card" style="border-left:5px solid {conf_color};margin-top:0.5rem;">
+            <div style="font-size:1.05rem;font-weight:700;color:#F0EBFF;">Average Confidence: {avg:.1f} / 5</div>
+            <div style="font-size:0.9rem;color:#D4C8F0;margin-top:0.4rem;">
+            {"Strong overall confidence — maintain and build on it." if avg >= 4
+             else "Moderate confidence — target lower-rated areas for education or professional advice." if avg >= 3
+             else "Several areas need attention — consider financial education or one-on-one guidance."}
+            </div>
+            {low_html}
+        </div>
+        """, unsafe_allow_html=True)
+
+        if st.button("← Review answers", key="conf_review"):
+            st.session_state["conf_q_idx"] = 0
+            st.rerun()
+
+        st.markdown("""
+        <div class="citation">
+            Parker, A. M., de Bruin, W. B., Yoong, J., &amp; Willis, R. (2012). Inappropriate confidence and retirement planning:
+            Four studies with a national sample. <em>Journal of Behavioral Decision Making, 25</em>(4), 382–389.
+            <a href="https://doi.org/10.1002/bdm.745">https://doi.org/10.1002/bdm.745</a>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("<hr class='divider'>", unsafe_allow_html=True)
+        nav_buttons()
+    else:
+        # Show back/forward page nav at bottom too (disabled until complete)
+        st.markdown("<hr class='divider'>", unsafe_allow_html=True)
+        c1, c2 = st.columns([1, 1])
+        with c1:
+            if st.button("← Back to Score", key="conf_pg_back", use_container_width=True):
+                ss_set("step", ss("step") - 1)
+                st.rerun()
+        with c2:
+            st.button("Complete all questions to continue →", key="conf_pg_next_disabled",
+                      use_container_width=True, disabled=True)
 
 
 # ─────────────────────────────────────────────
@@ -1238,10 +1330,10 @@ def step_cashflow():
         </div>
         """, unsafe_allow_html=True)
 
-    def bls_md(text):
-        """Only render BLS hint if user is in U.S."""
+    def bls_cap(text):
+        """Render BLS hint as a caption under a field — only if U.S. region selected."""
         if not outside_us:
-            st.markdown(f'<div class="bls-hint">{text}</div>', unsafe_allow_html=True)
+            st.caption(f"📊 BLS 2022 avg ({region}): {text}")
 
     income = st.number_input("Monthly net (take-home) income after taxes ($)",
                              0, 100_000, ss("income_net"), step=100, format="%d")
@@ -1252,33 +1344,42 @@ def step_cashflow():
     exp = ss("exp")
 
     st.markdown("#### Fixed Expenses *(same each month)*")
-    bls_md(f"BLS 2022 avg — Housing/shelter: ~${bls[0]:,}/mo · Utilities: ~${bls[1]:,}/mo ({region})")
-    exp["housing"]  = st.number_input("Housing (rent or mortgage payment only)",
+
+    exp["housing"] = st.number_input("Housing (rent or mortgage payment only)",
         0, 20_000, exp.get("housing", 0), step=50, format="%d", key="exp_housing")
+    bls_cap(f"Housing/shelter ~${bls[0]:,}/mo")
+
     exp["utilities"] = st.number_input("Utilities (electric, gas, water, internet, phone)",
         0, 3_000, exp.get("utilities", 0), step=25, format="%d", key="exp_utilities")
+    bls_cap(f"Utilities ~${bls[1]:,}/mo")
 
-    bls_md(f"BLS 2022 avg — Transportation: ~${bls[2]:,}/mo ({region}) — includes vehicle payments, gas, auto insurance, maintenance")
     exp["transport"] = st.number_input("Transportation (car payment, gas, auto insurance, transit)",
         0, 10_000, exp.get("transport", 0), step=25, format="%d", key="exp_transport")
+    bls_cap(f"All transportation ~${bls[2]:,}/mo (includes vehicle payments, gas, insurance, maintenance)")
 
     exp["insurance"] = st.number_input("Insurance (health, life, disability — not auto)",
         0, 5_000, exp.get("insurance", 0), step=25, format="%d", key="exp_insurance")
-    exp["debt_min"]  = st.number_input("Minimum debt payments (student loans, credit cards, personal loans)",
+
+    exp["debt_min"] = st.number_input("Minimum debt payments (student loans, credit cards, personal loans)",
         0, 10_000, exp.get("debt_min", 0), step=25, format="%d", key="exp_debt_min")
 
     st.markdown("#### Flexible Expenses *(variable each month)*")
-    bls_md(f"BLS 2022 avg — Groceries: ~${bls[3]:,}/mo · Dining out: ~${bls[4]:,}/mo ({region})")
-    exp["groceries"]     = st.number_input("Groceries & household supplies",
+
+    exp["groceries"] = st.number_input("Groceries & household supplies",
         0, 5_000, exp.get("groceries", 0), step=25, format="%d", key="exp_groceries")
+    bls_cap(f"Groceries ~${bls[3]:,}/mo")
+
     exp["entertainment"] = st.number_input("Dining out & entertainment",
         0, 5_000, exp.get("entertainment", 0), step=25, format="%d", key="exp_entertainment")
+    bls_cap(f"Dining out ~${bls[4]:,}/mo")
 
-    bls_md(f"BLS 2022 avg — Healthcare out-of-pocket: ~${bls[5]:,}/mo · Recreation: ~${bls[6]:,}/mo · Personal care: ~${bls[7]:,}/mo ({region})")
-    exp["personal"]      = st.number_input("Personal care & clothing",
+    exp["personal"] = st.number_input("Personal care & clothing",
         0, 3_000, exp.get("personal", 0), step=10, format="%d", key="exp_personal")
-    exp["other_flex"]    = st.number_input("Other variable expenses (subscriptions, childcare, pet care, etc.)",
+    bls_cap(f"Personal care ~${bls[7]:,}/mo")
+
+    exp["other_flex"] = st.number_input("Other variable expenses (subscriptions, childcare, pet care, etc.)",
         0, 5_000, exp.get("other_flex", 0), step=25, format="%d", key="exp_other_flex")
+    bls_cap(f"Healthcare out-of-pocket ~${bls[5]:,}/mo · Recreation ~${bls[6]:,}/mo")
 
     st.markdown("#### Occasional / Annual Expenses")
     occ = st.number_input(
@@ -1452,6 +1553,54 @@ def step_retirement():
 
     ret_return = st.slider("Expected annual return (%)", 3.0, 12.0, ss("ret_return"), step=0.5)
     ss_set("ret_return", ret_return)
+
+    # Context card for rate of return
+    if ret_return <= 5.0:
+        rr_note = "Conservative — appropriate for bond-heavy or near-retirement portfolios."
+        rr_color = "#FCD34D"
+    elif ret_return <= 8.0:
+        rr_note = "Moderate — reasonable for a diversified stock/bond portfolio over a long horizon."
+        rr_color = "#4ADE80"
+    elif ret_return <= 10.0:
+        rr_note = "Historically in range — the S&P 500's 30-year average annualized return is ~10% (nominal, before inflation)."
+        rr_color = "#4ADE80"
+    else:
+        rr_note = "Optimistic — exceeds the historical S&P 500 long-run average. Use with caution for planning purposes."
+        rr_color = "#F87171"
+
+    st.markdown(f"""
+    <div class="card" style="border-left:4px solid {rr_color};padding:0.85rem 1.2rem;margin-top:0;margin-bottom:1rem;">
+        <div style="font-size:0.88rem;color:#D4C8F0;">
+            <strong style="color:#F0EBFF;">About this rate:</strong> {rr_note}
+        </div>
+        <div style="font-size:0.8rem;color:#A89BC2;margin-top:0.5rem;">
+            The S&amp;P 500 (500 largest U.S.-listed companies) has returned approximately
+            <strong style="color:#D4C8F0;">10% annually on average over 30 years</strong> (nominal).
+            Adjusted for inflation (~3%/yr), the real return is closer to 7%.
+            Diversified portfolios including bonds typically return less.
+            Past performance does not guarantee future results.
+        </div>
+        <div style="font-size:0.75rem;color:#7A6A94;margin-top:0.4rem;">
+            Sources: Macrotrends. (2024). <em>S&amp;P 500 historical annual returns.</em>
+            <a href="https://www.macrotrends.net/2526/sp-500-historical-annual-returns" style="color:#A78BFA;">macrotrends.net</a> ·
+            NerdWallet. (2024). <em>Average stock market return.</em>
+            <a href="https://www.nerdwallet.com/investing/learn/average-stock-market-return" style="color:#A78BFA;">nerdwallet.com</a>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.caption(
+        f"📊 You selected {ret_return:.1f}%. For context: the S&P 500 has averaged ~10%/year "
+        "over the past 30 years (before inflation). A diversified portfolio (stocks + bonds) "
+        "typically averages 6–8%. More conservative (bonds-heavy) portfolios average 3–5%. "
+        "Adjust for your actual asset allocation and risk tolerance."
+    )
+    st.markdown("""
+    <div class="citation" style="margin-top:0.25rem;margin-bottom:1rem;">
+        Historical return benchmark: NerdWallet. (2024). <em>Average stock market return.</em>
+        <a href="https://www.nerdwallet.com/investing/learn/average-stock-market-return">
+        https://www.nerdwallet.com/investing/learn/average-stock-market-return</a>
+    </div>
+    """, unsafe_allow_html=True)
 
     age         = ss("age")
     ret_age     = ss("ret_age")
