@@ -4,7 +4,7 @@ A research-based interactive financial wellness assessment built with Python and
 
 ## What It Does
 
-This tool combines **subjective well-being** (how you feel about money) with **objective financial health** (net worth, cash flow, retirement readiness) to give users a complete picture — and a personalized, evidence-based action plan.
+This tool combines **subjective well-being** (how you feel about money) with **objective financial health** (net worth, cash flow, retirement readiness) to give users a more holistic picture of their financial capacity and empower financial planning. This is a tool for personal assessment and should not be used as advice. Always consult a financial professional for making informed financial decisions on critical topics.
 
 ### Assessment Modules
 
