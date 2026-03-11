@@ -51,19 +51,64 @@ All data is processed locally within the user's browser session. Nothing is stor
 
 All benchmarks and recommendations cite peer-reviewed research and government data sources in APA 7th edition format, with live hyperlinks. Sources include:
 
-- Board of Governors of the Federal Reserve System. (2023). Survey of consumer finances, 2022. https://www.federalreserve.gov/econres/scfindex.htm
-- Board of Governors of the Federal Reserve System. (2024). Report on the economic well-being of U.S. households in 2023. https://www.federalreserve.gov/publications/report-economic-well-being-us-households.htm
-- Choi, J. J., Laibson, D., Madrian, B. C., & Metrick, A. (2004). For better or for worse: Default effects and 401(k) savings behavior. In D. A. Wise (Ed.), Perspectives on the economics of aging (pp. 81–126). University of Chicago Press. https://doi.org/10.7208/chicago/9780226903286.001.0001
-- Consumer Financial Protection Bureau. (2017a). CFPB financial well-being scale. https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-scale/
-- Consumer Financial Protection Bureau. (2017b). CFPB financial well-being scale: Scale development technical report. https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-scale/
-- Consumer Financial Protection Bureau. (2017c). Financial well-being in America. https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-in-america/
-- Fidelity Investments. (2024). How much do I need to retire? https://www.fidelity.com/viewpoints/retirement/how-much-do-i-need-to-retire
-- Fisher, P. J., & Montalto, C. P. (2010). Effect of saving motives and horizon on saving behaviors. Journal of Economic Psychology, 31(1), 92–105. https://doi.org/10.1016/j.joep.2009.10.001
-- Garman, E. T., & Forgue, R. E. (2018). Personal finance (13th ed.). Cengage Learning.
-- Lusardi, A., & Mitchell, O. S. (2014). The economic importance of financial literacy: Theory and evidence. Journal of Economic Literature, 52(1), 5–44. https://doi.org/10.1257/jel.52.1.5
-- Madrian, B. C., & Shea, D. F. (2001). The power of suggestion: Inertia in 401(k) participation and savings behavior. Quarterly Journal of Economics, 116(4), 1149–1187. https://doi.org/10.1162/003355301753265543
-- Munnell, A. H., & Chen, A. (2021). 401(k)/IRA holdings in 2019: An update from the SCF (Issue Brief No. 21-5). Center for Retirement Research at Boston College. https://crr.bc.edu/briefs/401kira-holdings-in-2019-an-update-from-the-scf/
-- National Endowment for Financial Education. (2023). Financial education and decision-making. https://www.nefe.org/research
-- Parker, A. M., de Bruin, W. B., Yoong, J., & Willis, R. (2012). Inappropriate confidence and retirement planning: Four studies with a national sample. Journal of Behavioral Decision Making, 25(4), 382–389. https://doi.org/10.1002/bdm.745
-- Sin, R., Murphy, R. O., & Lamas, S. (2019). Goals-based financial planning: How simple lists can overcome cognitive blind spots. Journal of Financial Planning, 32(7), 32–43.
-- U.S. Department of Housing and Urban Development. (2023). Affordable housing. https://www.hud.gov/program_offices/comm_planning/affordablehousing
+---
+
+### Peer-Reviewed Journal Articles & Book Chapters
+
+Choi, J. J., Laibson, D., Madrian, B. C., & Metrick, A. (2004). For better or for worse: Default effects and 401(k) savings behavior. In D. Wise (Ed.), *Perspectives on the economics of aging* (pp. 81–126). University of Chicago Press. https://doi.org/10.7208/chicago/9780226903286.001.0001
+
+Fisher, P. J., & Montalto, C. P. (2010). Effect of saving motives and horizon on saving behaviors. *Journal of Economic Psychology, 31*(1), 92–105. https://doi.org/10.1016/j.joep.2009.10.001
+
+Lusardi, A., & Mitchell, O. S. (2014). The economic importance of financial literacy: Theory and evidence. *Journal of Economic Literature, 52*(1), 5–44. https://doi.org/10.1257/jel.52.1.5
+
+Madrian, B. C., & Shea, D. F. (2001). The power of suggestion: Inertia in 401(k) participation and savings behavior. *Quarterly Journal of Economics, 116*(4), 1149–1187. https://doi.org/10.1162/003355301753265543
+
+Munnell, A. H., & Chen, A. (2021). *401(k)/IRA holdings in 2019: An update from the SCF* (Issue Brief 21-5). Center for Retirement Research at Boston College. https://crr.bc.edu/briefs/401kira-holdings-in-2019-an-update-from-the-scf/
+
+Parker, A. M., de Bruin, W. B., Yoong, J., & Willis, R. (2012). Inappropriate confidence and retirement planning: Four studies with a national sample. *Journal of Behavioral Decision Making, 25*(4), 382–389. https://doi.org/10.1002/bdm.745
+
+Pfau, W. D. (2011). Safe savings rates: A new approach to retirement planning over the life cycle. *Journal of Financial Planning, 24*(5), 42–50.
+
+Sin, R., Murphy, R. O., & Lamas, S. (2019). Goals-based financial planning: How simple lists can overcome cognitive blind spots. *Journal of Financial Planning, 32*(7), 32–43.
+
+---
+
+### Government & Regulatory Reports
+
+Board of Governors of the Federal Reserve System. (2023). *Survey of Consumer Finances, 2022*. https://www.federalreserve.gov/econres/scfindex.htm
+
+Board of Governors of the Federal Reserve System. (2024). *Report on the economic well-being of U.S. households in 2023*. https://www.federalreserve.gov/publications/report-economic-well-being-us-households.htm
+
+Consumer Financial Protection Bureau. (2017). *CFPB Financial Well-Being Scale: Scale development technical report*. https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-scale/
+
+Consumer Financial Protection Bureau. (2017). *Financial well-being in America*. https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-in-america/
+
+U.S. Bureau of Labor Statistics. (2023). *Consumer Expenditure Survey, 2022* (Table 1101: Regional expenditure means). https://www.bls.gov/cex/
+
+---
+
+### Industry & Financial Planning Sources
+
+Fidelity Investments. (2024). *How much do I need to retire?* https://www.fidelity.com/viewpoints/retirement/how-much-do-i-need-to-retire
+
+Macrotrends. (2024). *S&P 500 historical annual returns*. https://www.macrotrends.net/2526/sp-500-historical-annual-returns
+
+NerdWallet. (2024). *Average stock market return*. https://www.nerdwallet.com/investing/learn/average-stock-market-return
+
+National Endowment for Financial Education. (2023). *Financial education and decision-making*. https://www.nefe.org/research
+
+---
+
+### Tools & Resources Referenced (Not Formal Citations)
+
+Consumer Financial Protection Bureau. (n.d.). *Financial well-being tools*. https://www.consumerfinance.gov/consumer-tools/financial-well-being/
+
+Consumer Financial Protection Bureau. (n.d.). *Your Money, Your Goals toolkit*. https://www.consumerfinance.gov/consumer-tools/your-money-your-goals/
+
+MyMoney.gov. (n.d.). *U.S. federal financial literacy portal*. https://www.mymoney.gov
+
+National Foundation for Credit Counseling. (n.d.). *Nonprofit credit counseling*. https://www.nfcc.org
+
+National Association of Personal Financial Advisors. (n.d.). *Find a fee-only fiduciary advisor*. https://www.napfa.org/find-an-advisor
+
+National Endowment for Financial Education. (n.d.). *SmartAboutMoney.org*. https://www.smartaboutmoney.org
