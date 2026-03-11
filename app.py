@@ -594,7 +594,7 @@ def step_welcome():
         st.markdown("""
         <div class="card card-amber">
             <strong>⏱ Time required</strong><br>
-            <span style="font-size:0.88rem;color:#FCD34D;">15–30 minutes</span>
+            <span style="font-size:0.88rem;color:#FCD34D;">10–15 minutes</span>
         </div>
         """, unsafe_allow_html=True)
     with col2:
@@ -714,29 +714,36 @@ def step_goals():
 
     HORIZONS = ["Short-term (0–2 yrs)", "Medium-term (3–5 yrs)", "Long-term (5+ yrs)"]
 
-    # Add row FIRST (avoids key conflicts after rerun)
+    # Use a counter as part of the key to reset the input after add
+    if "custom_goal_add_count" not in st.session_state:
+        st.session_state["custom_goal_add_count"] = 0
+    add_count = st.session_state["custom_goal_add_count"]
+
     col_new, col_hz_new, col_add = st.columns([3, 2, 1])
     with col_new:
-        # No value= param — lets Streamlit preserve what the user typed across reruns
         new_goal_text = st.text_input(
-            "New custom goal", key="new_custom_goal_text",
-            label_visibility="collapsed", placeholder="Type a new goal here…"
+            "New custom goal",
+            key=f"new_custom_goal_text_{add_count}",
+            label_visibility="collapsed",
+            placeholder="Type a new goal here…"
         )
     with col_hz_new:
         new_goal_hz = st.selectbox(
             "New goal horizon", HORIZONS,
-            key="new_custom_goal_hz", label_visibility="collapsed"
+            key=f"new_custom_goal_hz_{add_count}",
+            label_visibility="collapsed"
         )
     with col_add:
         st.markdown("<div style='margin-top:0.35rem'></div>", unsafe_allow_html=True)
         if st.button("＋ Add", key="add_custom_goal"):
-            txt = (st.session_state.get("new_custom_goal_text") or "").strip()
+            txt = new_goal_text.strip()
             if txt:
-                updated = ss("custom_goals") + [{"text": txt, "horizon": st.session_state.get("new_custom_goal_hz", HORIZONS[0])}]
+                updated = ss("custom_goals") + [{"text": txt, "horizon": new_goal_hz}]
                 ss_set("custom_goals", updated)
-                # Clear the input field
-                st.session_state["new_custom_goal_text"] = ""
+                st.session_state["custom_goal_add_count"] += 1  # new key = fresh input
                 st.rerun()
+            else:
+                st.warning("Please type a goal before clicking Add.")
 
     # Display + edit existing custom goals
     custom_goals = ss("custom_goals")
@@ -1496,7 +1503,7 @@ def step_emergency():
     """, unsafe_allow_html=True)
 
     # Progress bar
-    metric_bar("Progress toward 6-month goal ", min(months_covered, 6), 6,
+    metric_bar("Progress toward 6-month goal", min(months_covered, 6), 6,
                color="#4ADE80" if months_covered >= 6 else "#FCD34D" if months_covered >= 3 else "#F87171",
                suffix=" months")
 
@@ -1551,7 +1558,13 @@ def step_retirement():
                                   0, 50_000, ss("ret_monthly"), step=50, format="%d")
     ss_set("ret_monthly", ret_monthly)
 
-    ret_return = st.slider("Expected annual return (%)", 3.0, 12.0, ss("ret_return"), step=0.5)
+    ret_return = st.number_input(
+        "Expected annual return (% per year)",
+        min_value=1.0, max_value=15.0,
+        value=float(ss("ret_return")),
+        step=0.5,
+        format="%.1f"
+    )
     ss_set("ret_return", ret_return)
 
     # Context card for rate of return
@@ -1637,60 +1650,124 @@ def step_retirement():
     </div>
     """, unsafe_allow_html=True)
 
+    # ── Peer comparison color ─────────────────────────────────────────────────
+    if ret_saved >= scf_peer * 1.25:
+        peer_color = "#4ADE80"
+        peer_tier  = "Well above peer median"
+        peer_icon  = "🟢"
+    elif ret_saved >= scf_peer * 0.9:
+        peer_color = "#FCD34D"
+        peer_tier  = "Near peer median"
+        peer_icon  = "🟡"
+    else:
+        peer_color = "#F87171"
+        peer_tier  = "Below peer median"
+        peer_icon  = "🔴"
+
+    # ── Current position vs. Fidelity goal ───────────────────────────────────
     st.markdown(f"""
-    <div class="card" style="border-left:4px solid {color_now};margin-top:0.75rem;">
+    <div class="card" style="border-left:5px solid {color_now};margin-top:0.75rem;">
+        <div style="font-size:0.82rem;color:#A89BC2;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;">
+            Where you stand today vs. the Fidelity milestone for your age
+        </div>
         <div class="kpi-grid">
             <div class="kpi-box">
-                <div class="label">Current Savings</div>
+                <div class="label">Your Current Savings</div>
                 <div class="value">{fmt_dollar(ret_saved)}</div>
+                <div style="font-size:0.7rem;color:#A89BC2;margin-top:3px;">What you have now</div>
             </div>
             <div class="kpi-box">
-                <div class="label">Goal Today</div>
+                <div class="label">Fidelity Goal at Age {age}</div>
                 <div class="value" style="color:{color_now}">{fmt_dollar(goal_now)}</div>
+                <div style="font-size:0.7rem;color:#A89BC2;margin-top:3px;">{mult_now:.1f}× your annual salary — prescriptive target</div>
             </div>
             <div class="kpi-box">
                 <div class="label">Gap / Surplus Today</div>
                 <div class="value" style="color:{color_now}">
                     {"+" if gap_now <= 0 else "-"}{fmt_dollar(abs(gap_now))}
                 </div>
-            </div>
-            <div class="kpi-box">
-                <div class="label">Peer Median (SCF)</div>
-                <div class="value">{fmt_dollar(scf_peer)}</div>
+                <div style="font-size:0.7rem;color:#A89BC2;margin-top:3px;">{"Ahead of Fidelity goal" if gap_now <= 0 else "Behind Fidelity goal"}</div>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
+    # ── Peer comparison — separate, color-coded, with undersaving context ─────
     st.markdown(f"""
-    <div class="card" style="border-left:4px solid {color_proj};margin-top:0.75rem;">
-        <div style="font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;">
-            Retirement Projection at Age {ret_age} (with {ret_return:.1f}% annual return)
+    <div class="card" style="border-left:5px solid {peer_color};margin-top:0.75rem;">
+        <div style="font-size:0.82rem;color:#A89BC2;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.6rem;">
+            How you compare to peers your age (descriptive — what others have)
+        </div>
+        <div class="kpi-grid">
+            <div class="kpi-box">
+                <div class="label">Your Savings</div>
+                <div class="value">{fmt_dollar(ret_saved)}</div>
+            </div>
+            <div class="kpi-box">
+                <div class="label">Peer Median (SCF 2022)</div>
+                <div class="value">{fmt_dollar(scf_peer)}</div>
+                <div style="font-size:0.7rem;color:#A89BC2;margin-top:3px;">Median for ages {bracket}</div>
+            </div>
+            <div class="kpi-box">
+                <div class="label">vs. Peer Median</div>
+                <div class="value" style="color:{peer_color}">
+                    {peer_icon} {peer_tier}
+                </div>
+            </div>
+        </div>
+        <div style="margin-top:0.85rem;padding:0.6rem 0.8rem;background:#0E0A1E;border-radius:8px;border-left:3px solid #FCD34D;">
+            <div style="font-size:0.82rem;color:#FDE68A;font-weight:600;margin-bottom:0.25rem;">
+                ⚠️ Important context: peer median ≠ sufficient
+            </div>
+            <div style="font-size:0.8rem;color:#D4C8F0;line-height:1.55;">
+                Research consistently shows that most Americans are <strong>significantly under-saved for retirement</strong>.
+                Being above the peer median means you're doing better than most — but it does not mean you're on track
+                to meet your own retirement income needs. The <strong>Fidelity milestone above</strong> is the
+                more meaningful target for adequacy.
+            </div>
+            <div style="font-size:0.75rem;color:#A89BC2;margin-top:0.4rem;">
+                Source: Munnell, A. H., &amp; Chen, A. (2021). <em>401(k)/IRA holdings in 2019: An update from the SCF.</em>
+                Center for Retirement Research at Boston College, Issue Brief 21-5.
+                <a href="https://crr.bc.edu/briefs/401kira-holdings-in-2019-an-update-from-the-scf/" style="color:#C084FC;">crr.bc.edu</a>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Projection card ───────────────────────────────────────────────────────
+    st.markdown(f"""
+    <div class="card" style="border-left:5px solid {color_proj};margin-top:0.75rem;">
+        <div style="font-size:0.82rem;color:#A89BC2;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;">
+            Projected retirement savings at age {ret_age} (with {ret_return:.1f}% annual return)
         </div>
         <div class="kpi-grid">
             <div class="kpi-box">
                 <div class="label">Projected Savings</div>
                 <div class="value" style="color:{color_proj}">{fmt_dollar(projected)}</div>
+                <div style="font-size:0.7rem;color:#A89BC2;margin-top:3px;">If contributions continue</div>
             </div>
             <div class="kpi-box">
-                <div class="label">Goal at Retirement</div>
+                <div class="label">Fidelity Goal at {ret_age}</div>
                 <div class="value">{fmt_dollar(goal_ret)}</div>
+                <div style="font-size:0.7rem;color:#A89BC2;margin-top:3px;">{mult_at_ret:.1f}× salary — prescriptive target</div>
             </div>
             <div class="kpi-box">
-                <div class="label">Projected Gap/Surplus</div>
+                <div class="label">Projected Gap / Surplus</div>
                 <div class="value" style="color:{color_proj}">
                     {"+" if projected >= goal_ret else "-"}{fmt_dollar(abs(gap_proj))}
                 </div>
+                <div style="font-size:0.7rem;color:#A89BC2;margin-top:3px;">{"On track" if projected >= goal_ret else "Shortfall at retirement"}</div>
             </div>
             <div class="kpi-box">
                 <div class="label">Years to Retirement</div>
                 <div class="value">{years_left}</div>
+                <div style="font-size:0.7rem;color:#A89BC2;margin-top:3px;">Time to grow savings</div>
             </div>
         </div>
-        <p style="font-size:0.78rem;color:#A89BC2;margin-top:0.75rem;">
-            ⚠️ Projection assumes constant {ret_return:.1f}% return and consistent contributions.
-            Actual returns vary. This does not account for inflation (~3%/year), taxes on withdrawals,
-            or Social Security income. Consult a CFP® for personalized projections.
+        <p style="font-size:0.78rem;color:#A89BC2;margin-top:0.75rem;line-height:1.5;">
+            ⚠️ Assumes constant {ret_return:.1f}% annual return and consistent contributions.
+            Does <strong>not</strong> account for inflation (~3%/yr), taxes on withdrawals, or
+            Social Security income. Consult a CFP® for personalized projections.
         </p>
     </div>
     """, unsafe_allow_html=True)
