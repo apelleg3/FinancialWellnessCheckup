@@ -6,7 +6,18 @@ Built with Streamlit | All data processed locally in your session
 import streamlit as st
 import json
 import math
+import io
 from datetime import date
+
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.lib import colors
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
+    HRFlowable, KeepTogether
+)
+from reportlab.lib.enums import TA_LEFT, TA_CENTER
 
 # ─────────────────────────────────────────────
 # PAGE CONFIG
@@ -421,8 +432,14 @@ GOAL_CATS = {
     ],
 }
 
-# ─────────────────────────────────────────────
-# CFPB QUESTIONS (validated 10-item scale)
+# Reverse lookup: goal text → its category/horizon label
+GOAL_HORIZON_MAP = {
+    goal: cat
+    for cat, items in GOAL_CATS.items()
+    for goal in items
+}
+
+
 # Official wording from CFPB Financial Well-Being Scale Questionnaire (2017)
 # ─────────────────────────────────────────────
 
@@ -1829,6 +1846,281 @@ def step_retirement():
     nav_buttons()
 
 # ─────────────────────────────────────────────
+# PDF REPORT GENERATOR
+# ─────────────────────────────────────────────
+def generate_pdf(data: dict) -> bytes:
+    """Build a formatted Financial Wellness Summary PDF using reportlab."""
+    buf = io.BytesIO()
+
+    # ── Document setup ────────────────────────────────────────────────────────
+    doc = SimpleDocTemplate(
+        buf, pagesize=letter,
+        leftMargin=0.85*inch, rightMargin=0.85*inch,
+        topMargin=0.9*inch,   bottomMargin=0.85*inch,
+    )
+
+    # ── Color palette ─────────────────────────────────────────────────────────
+    PLUM     = colors.HexColor("#2D1B5E")
+    LAVENDER = colors.HexColor("#7C3AED")
+    LIGHT_PU = colors.HexColor("#EDE5F5")
+    GREEN    = colors.HexColor("#166534")
+    GREEN_BG = colors.HexColor("#D1FAE5")
+    AMBER    = colors.HexColor("#92400E")
+    AMBER_BG = colors.HexColor("#FEF3C7")
+    RED      = colors.HexColor("#991B1B")
+    RED_BG   = colors.HexColor("#FEE2E2")
+    MID_GRAY = colors.HexColor("#374151")
+    RULE     = colors.HexColor("#C4B5FD")
+    WHITE    = colors.white
+    NEAR_BLK = colors.HexColor("#111827")
+
+    # ── Styles ────────────────────────────────────────────────────────────────
+    base = getSampleStyleSheet()
+
+    def ps(name, parent="Normal", **kw):
+        return ParagraphStyle(name, parent=base[parent], **kw)
+
+    S = {
+        "title":    ps("title",    fontSize=22, textColor=PLUM,
+                       fontName="Helvetica-Bold", spaceAfter=4, leading=26),
+        "subtitle": ps("subtitle", fontSize=10, textColor=LAVENDER,
+                       spaceAfter=2),
+        "dateline": ps("dateline", fontSize=8.5, textColor=MID_GRAY,
+                       spaceAfter=16),
+        "h1":       ps("h1", "Heading1", fontSize=13, textColor=PLUM,
+                       fontName="Helvetica-Bold", spaceBefore=14, spaceAfter=5,
+                       leading=16),
+        "h2":       ps("h2", "Heading2", fontSize=10.5, textColor=LAVENDER,
+                       fontName="Helvetica-Bold", spaceBefore=8, spaceAfter=3),
+        "body":     ps("body", fontSize=9.5, textColor=MID_GRAY, leading=14,
+                       spaceAfter=4),
+        "small":    ps("small", fontSize=8, textColor=MID_GRAY, leading=11,
+                       spaceAfter=3),
+        "goal_h":   ps("goal_h", fontSize=9, textColor=PLUM,
+                       fontName="Helvetica-Bold", spaceBefore=6, spaceAfter=1),
+        "goal_i":   ps("goal_i", fontSize=9, textColor=MID_GRAY, leading=13,
+                       leftIndent=12, spaceAfter=1),
+        "action_t": ps("action_t", fontSize=9.5, textColor=NEAR_BLK,
+                       fontName="Helvetica-Bold", spaceAfter=2),
+        "action_d": ps("action_d", fontSize=8.5, textColor=MID_GRAY, leading=13,
+                       leftIndent=12, spaceAfter=6),
+        "cite":     ps("cite", fontSize=7.5, textColor=colors.HexColor("#6B7280"),
+                       leading=10, spaceAfter=2),
+    }
+
+    def rule(color=RULE, thickness=0.8):
+        return HRFlowable(width="100%", thickness=thickness,
+                          color=color, spaceAfter=8, spaceBefore=2)
+
+    def kpi_table(rows):
+        """rows = list of (label, value, status_color_hex or None)"""
+        tdata = [[
+            Paragraph(f"<b>{lbl}</b>", ps("kl", fontSize=7.5, textColor=colors.HexColor("#6B7280"),
+                      fontName="Helvetica-Bold")),
+            Paragraph(val, ps("kv", fontSize=11, textColor=colors.HexColor(col) if col else NEAR_BLK,
+                      fontName="Helvetica-Bold"))
+        ] for lbl, val, col in rows]
+        t = Table(tdata, colWidths=[None, None], repeatRows=0)
+        t.setStyle(TableStyle([
+            ("ALIGN", (0,0), (-1,-1), "LEFT"),
+            ("VALIGN", (0,0), (-1,-1), "TOP"),
+            ("BACKGROUND", (0,0), (-1,-1), colors.HexColor("#F9F5FF")),
+            ("BOX", (0,0), (-1,-1), 0.5, colors.HexColor("#DDD5EC")),
+            ("INNERGRID", (0,0), (-1,-1), 0.25, colors.HexColor("#EDE5F5")),
+            ("TOPPADDING", (0,0), (-1,-1), 5),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 5),
+            ("LEFTPADDING", (0,0), (-1,-1), 7),
+            ("RIGHTPADDING", (0,0), (-1,-1), 7),
+        ]))
+        return t
+
+    def badge_para(text, bg_hex, fg_hex):
+        style = ps("badge", fontSize=8, textColor=colors.HexColor(fg_hex),
+                   fontName="Helvetica-Bold", backColor=colors.HexColor(bg_hex),
+                   borderPadding=2)
+        return Paragraph(text, style)
+
+    # ── Story ─────────────────────────────────────────────────────────────────
+    story = []
+    d = data  # shorthand
+
+    # Header
+    story.append(Paragraph("Financial Wellness Checkup", S["title"]))
+    story.append(Paragraph("Personalized Assessment Summary", S["subtitle"]))
+    story.append(Paragraph(
+        f"Completed: {d['date']} &nbsp;·&nbsp; "
+        f"Age: {d['age']} &nbsp;·&nbsp; "
+        f"Salary: {d['salary_fmt']} &nbsp;·&nbsp; "
+        f"Region: {d['region']}",
+        S["dateline"]
+    ))
+    story.append(rule(PLUM, 1.5))
+
+    # ── 1. Financial Snapshot ─────────────────────────────────────────────────
+    story.append(Paragraph("Financial Snapshot", S["h1"]))
+
+    def status_hex(val, good_thresh, warn_thresh, higher_is_better=True):
+        if higher_is_better:
+            return "#166534" if val >= good_thresh else "#92400E" if val >= warn_thresh else "#991B1B"
+        else:
+            return "#166534" if val <= good_thresh else "#92400E" if val <= warn_thresh else "#991B1B"
+
+    snap_rows = [
+        ("Net Worth",           d["net_worth_fmt"],        None),
+        ("CFPB Well-Being Score",
+         f"{d['cfpb_score']}/100 — {d['cfpb_tier']}",
+         status_hex(d['cfpb_score'], 61, 41)),
+        ("Emergency Fund",
+         f"{d['ef_months']:.1f} months of expenses",
+         status_hex(d['ef_months'], 6, 3)),
+        ("Savings Rate",
+         f"{d['savings_rate']:.1f}% of gross income",
+         status_hex(d['savings_rate'], 15, 10)),
+        ("Retirement Savings",  d['ret_saved_fmt'],         None),
+        ("Retirement Goal (Fidelity)",
+         f"{d['ret_goal_fmt']} ({d['ret_mult']:.1f}x salary)",
+         None),
+        ("Retirement Projection",
+         d['ret_projected_fmt'],
+         status_hex(d['ret_projected'], d['ret_goal'], d['ret_goal'] * 0.8)),
+        ("Avg. Financial Confidence",
+         f"{d['avg_conf']:.1f} / 5",
+         status_hex(d['avg_conf'], 4, 3)),
+    ]
+    story.append(kpi_table(snap_rows))
+    story.append(Spacer(1, 8))
+    story.append(rule())
+
+    # ── 2. Goals ──────────────────────────────────────────────────────────────
+    story.append(Paragraph("Your Financial Goals", S["h1"]))
+    story.append(Paragraph(
+        "Goals are organized by time horizon. Custom goals show the horizon you selected.",
+        S["small"]
+    ))
+    story.append(Spacer(1, 4))
+
+    # Group preset goals by horizon
+    grouped = {}
+    for g in d["preset_goals"]:
+        cat = GOAL_HORIZON_MAP.get(g, "Ongoing Financial Security")
+        grouped.setdefault(cat, []).append(g)
+
+    # Render in order
+    cat_order = ["Short-Term (0–2 years)", "Medium-Term (3–5 years)",
+                 "Long-Term (5+ years)", "Ongoing Financial Security"]
+    any_preset = False
+    for cat in cat_order:
+        items = grouped.get(cat, [])
+        if items:
+            any_preset = True
+            story.append(KeepTogether([
+                Paragraph(cat, S["goal_h"]),
+                *[Paragraph(f"• {g}", S["goal_i"]) for g in items],
+            ]))
+
+    # Custom goals
+    if d["custom_goals"]:
+        story.append(Paragraph("Custom Goals", S["goal_h"]))
+        for cg in d["custom_goals"]:
+            story.append(Paragraph(
+                f"• {cg['text']}  <font color='#7C3AED'><i>({cg['horizon']})</i></font>",
+                S["goal_i"]
+            ))
+
+    if not any_preset and not d["custom_goals"]:
+        story.append(Paragraph("No goals selected.", S["body"]))
+
+    story.append(Spacer(1, 4))
+    story.append(rule())
+
+    # ── 3. Action Plan ────────────────────────────────────────────────────────
+    story.append(Paragraph("Priority Action Steps", S["h1"]))
+    story.append(Paragraph(
+        "Ranked by evidence-based impact on financial well-being.",
+        S["small"]
+    ))
+    story.append(Spacer(1, 6))
+
+    priority_cfg = {
+        "critical": ("#FEE2E2", "#991B1B", "CRITICAL"),
+        "high":     ("#FEF3C7", "#92400E", "HIGH PRIORITY"),
+        "medium":   ("#EDE5F5", "#4C1D95", "RECOMMENDED"),
+        "good":     ("#D1FAE5", "#166534", "MAINTAIN"),
+    }
+    for i, a in enumerate(d["actions"], 1):
+        bg, fg, lbl = priority_cfg.get(a["priority"], ("#F3F4F6", "#374151", ""))
+        badge_style = ps(
+            f"bdg{i}", fontSize=7, textColor=colors.HexColor(fg),
+            fontName="Helvetica-Bold", backColor=colors.HexColor(bg),
+            leftIndent=0,
+        )
+        badge_para = Paragraph(f"  {lbl}  ", badge_style)
+        badge_tbl = Table([[badge_para]], colWidths=[1.2*inch])
+        badge_tbl.setStyle(TableStyle([
+            ("BOX",           (0,0), (0,0), 0.5, colors.HexColor(fg)),
+            ("TOPPADDING",    (0,0), (-1,-1), 2),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 2),
+            ("LEFTPADDING",   (0,0), (-1,-1), 4),
+            ("RIGHTPADDING",  (0,0), (-1,-1), 4),
+        ]))
+        title_para = Paragraph(f"{i}. {a['title']}", S["action_t"])
+        row_tbl = Table([[badge_tbl, title_para]], colWidths=[1.3*inch, None])
+        row_tbl.setStyle(TableStyle([
+            ("VALIGN",        (0,0), (-1,-1), "MIDDLE"),
+            ("LEFTPADDING",   (0,0), (-1,-1), 0),
+            ("RIGHTPADDING",  (0,0), (-1,-1), 0),
+            ("TOPPADDING",    (0,0), (-1,-1), 2),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 2),
+        ]))
+        story.append(KeepTogether([
+            row_tbl,
+            Paragraph(a["detail"], S["action_d"]),
+        ]))
+
+    story.append(rule())
+
+    # ── 4. Resources ─────────────────────────────────────────────────────────
+    story.append(Paragraph("Evidence-Based Resources", S["h1"]))
+    resources = [
+        ("CFPB Financial Well-Being Tools",
+         "consumerfinance.gov/consumer-tools/financial-well-being/"),
+        ("SmartAboutMoney.org (NEFE)",
+         "smartaboutmoney.org"),
+        ("MyMoney.gov — U.S. Federal Financial Literacy Portal",
+         "mymoney.gov"),
+        ("NFCC.org — Nonprofit Credit Counseling",
+         "nfcc.org"),
+        ("NAPFA.org — Fee-Only Fiduciary Financial Advisors",
+         "napfa.org/find-an-advisor"),
+    ]
+    for label, url in resources:
+        story.append(Paragraph(
+            f"• <b>{label}</b>: <font color='#7C3AED'>{url}</font>",
+            S["body"]
+        ))
+
+    story.append(Spacer(1, 10))
+    story.append(rule(PLUM, 1.0))
+
+    # ── Footer ────────────────────────────────────────────────────────────────
+    story.append(Paragraph(
+        "This report was generated by the Financial Wellness Checkup tool. "
+        "All data was entered by the user and processed locally — nothing was stored or transmitted. "
+        "This is not financial, legal, or tax advice. Consult a qualified CFP® for personalized guidance. "
+        "Re-take this assessment quarterly to track your progress.",
+        S["cite"]
+    ))
+    story.append(Paragraph(
+        "Key sources: CFPB (2017); Federal Reserve SCF (2022); Fidelity Investments (2024); "
+        "Lusardi &amp; Mitchell (2014); Madrian &amp; Shea (2001); BLS Consumer Expenditure Survey (2022).",
+        S["cite"]
+    ))
+
+    doc.build(story)
+    return buf.getvalue()
+
+
+# ─────────────────────────────────────────────
 # STEP 9 — ACTION PLAN
 # ─────────────────────────────────────────────
 def step_action_plan():
@@ -1876,16 +2168,58 @@ def step_action_plan():
     """, unsafe_allow_html=True)
 
     if goals or ss("custom_goals"):
-        st.markdown("#### 🎯 Your Selected Goals")
-        all_goal_items = list(goals[:5])
-        for cg in ss("custom_goals")[:3]:
-            all_goal_items.append(f"📝 {cg['text']} ({cg['horizon']})")
-        goal_html = "".join(f"<li>{g}</li>" for g in all_goal_items)
-        st.markdown(f"""
-        <div class="card card-amber">
-            <ul style="margin:0;padding-left:1.2rem;font-size:0.9rem;color:#FCD34D;">{goal_html}</ul>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("#### 🎯 Your Financial Goals")
+        st.caption("Goals are grouped by time horizon. Work through them in order — short-term first.")
+
+        # Group preset goals by horizon
+        grouped = {}
+        for g in goals:
+            cat = GOAL_HORIZON_MAP.get(g, "Ongoing Financial Security")
+            grouped.setdefault(cat, []).append(g)
+
+        # Horizon badges config
+        horizon_cfg = {
+            "Short-Term (0–2 years)":    ("#FCD34D", "#1A1200", "SHORT-TERM  0–2 yrs"),
+            "Medium-Term (3–5 years)":   ("#A78BFA", "#0E0A1E", "MEDIUM-TERM  3–5 yrs"),
+            "Long-Term (5+ years)":      ("#4ADE80", "#082010", "LONG-TERM  5+ yrs"),
+            "Ongoing Financial Security":("#94A3B8", "#0F172A", "ONGOING"),
+        }
+        cat_order = ["Short-Term (0–2 years)", "Medium-Term (3–5 years)",
+                     "Long-Term (5+ years)", "Ongoing Financial Security"]
+
+        for cat in cat_order:
+            items = grouped.get(cat, [])
+            if not items:
+                continue
+            accent, bg, badge_txt = horizon_cfg[cat]
+            badge_html = f"<span style='background:{accent};color:{bg};font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:99px;letter-spacing:0.06em;'>{badge_txt}</span>"
+            items_html = "".join(
+                f"<li style='margin-bottom:4px;'>{g}</li>"
+                for g in items
+            )
+            st.markdown(f"""
+            <div style="margin-bottom:0.75rem;">
+                {badge_html}
+                <ul style="margin:0.4rem 0 0;padding-left:1.3rem;font-size:0.9rem;color:#D4C8F0;line-height:1.6;">
+                    {items_html}
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+
+        if ss("custom_goals"):
+            custom_html = "".join(
+                f"<li style='margin-bottom:4px;'>{cg['text']} "
+                f"<span style='font-size:0.78rem;color:#C084FC;'>({cg['horizon']})</span></li>"
+                for cg in ss("custom_goals")
+            )
+            st.markdown(f"""
+            <div style="margin-bottom:0.75rem;">
+                <span style='background:#C084FC;color:#0E0A1E;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:99px;letter-spacing:0.06em;'>CUSTOM GOALS</span>
+                <ul style="margin:0.4rem 0 0;padding-left:1.3rem;font-size:0.9rem;color:#D4C8F0;line-height:1.6;">
+                    {custom_html}
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
 
     # ── Priority Action Items ──────────────────
     st.markdown("#### ✅ Priority Action Steps")
@@ -2064,29 +2398,61 @@ def step_action_plan():
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Download ─────────────────────────────
-    st.markdown("#### 💾 Save Your Results")
+    # ── Save / Print ──────────────────────────────────────────────────────────
+    st.markdown("#### 💾 Save or Print Your Report")
     _, _, total_nw = net_worth()
-    summary = {
-        "date": date.today().isoformat(),
-        "demographics": {"age": age, "salary": salary, "retirement_age": ret_age, "region": ss("region")},
-        "goals": goals,
-        "cfpb_wellbeing_score": cfpb_score,
-        "avg_financial_confidence": round(avg_conf, 2),
-        "net_worth": total_nw,
-        "emergency_fund_months": round(ef_months, 1),
-        "savings_rate_pct": round(sr, 1),
-        "retirement_current": ret_saved,
-        "retirement_projected": round(projected),
-        "retirement_goal": round(goal_ret),
-        "priority_actions": [a["title"] for a in actions],
+
+    # Determine CFPB tier label
+    cfpb_tier = ("High well-being" if cfpb_score >= 61
+                 else "Moderate well-being" if cfpb_score >= 41
+                 else "Lower well-being")
+
+    pdf_data = {
+        "date":             date.today().strftime("%B %d, %Y"),
+        "age":              age,
+        "salary_fmt":       fmt_dollar(salary),
+        "region":           ss("region"),
+        "net_worth_fmt":    fmt_dollar(total_nw),
+        "cfpb_score":       cfpb_score,
+        "cfpb_tier":        cfpb_tier,
+        "ef_months":        ef_months,
+        "savings_rate":     sr,
+        "ret_saved_fmt":    fmt_dollar(ret_saved),
+        "ret_goal_fmt":     fmt_dollar(goal_ret),
+        "ret_mult":         mult_ret,
+        "ret_projected_fmt":fmt_dollar(projected),
+        "ret_projected":    projected,
+        "ret_goal":         goal_ret,
+        "avg_conf":         avg_conf,
+        "preset_goals":     goals,
+        "custom_goals":     ss("custom_goals"),
+        "actions":          actions,
     }
-    st.download_button(
-        label="⬇️ Download Summary (JSON)",
-        data=json.dumps(summary, indent=2),
-        file_name=f"financial-wellness-{date.today().isoformat()}.json",
-        mime="application/json",
-    )
+
+    try:
+        pdf_bytes = generate_pdf(pdf_data)
+        col_pdf, col_print = st.columns([1, 1])
+        with col_pdf:
+            st.download_button(
+                label="⬇️ Download PDF Report",
+                data=pdf_bytes,
+                file_name=f"financial-wellness-{date.today().isoformat()}.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+            )
+        with col_print:
+            # Browser print via a hidden iframe trick
+            st.markdown("""
+            <button onclick="window.print()"
+                style="width:100%;padding:0.5rem 1rem;background:linear-gradient(135deg,#2D1B5E,#5B2FA0);
+                color:#F0EBFF;border:none;border-radius:10px;font-size:0.95rem;font-weight:600;
+                cursor:pointer;font-family:'DM Sans',sans-serif;">
+                🖨️ Print / Save as PDF
+            </button>
+            """, unsafe_allow_html=True)
+            st.caption("Use your browser's Print → 'Save as PDF' option for best results.")
+    except Exception as e:
+        st.warning(f"PDF generation unavailable: {e}. Please take a screenshot to save your results.")
 
     st.markdown("""
     <div class="card card-purple" style="text-align:center;margin-top:1.5rem;">
