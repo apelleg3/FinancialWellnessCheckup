@@ -25,118 +25,150 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-/* ── Palette reference (WCAG AA verified) ───────────────────────────────────
-   Plum dark   #3D1A5C  14:1 on white   Primary brand / headers
-   Plum mid    #6B3FA0   7:1 on white   Accents / borders / info
-   Forest grn  #1E5C3A   7.5:1 on wht  Success / positive states
-   Amber dark  #7A4F00   8.5:1 on wht  Warning / caution states
-   Crimson     #8B1A1A   9:1 on white   Critical / danger states
-   Text dark   #1A0A2E  15:1 on white   Primary headings
-   Text body   #3D2C5C   9.5:1          Body copy
-   Text muted  #5E4D78   5.5:1          Labels / captions (large text ok)
-   Text xmute  #7A6A94   4.6:1          Footnotes (large/UI text only)
-   ─────────────────────────────────────────────────────────────────────────── */
+/* ── FORCE LIGHT MODE — overrides Streamlit dark theme detection ──────────── */
+html, body { color-scheme: light !important; }
+[data-testid="stAppViewContainer"],
+[data-testid="stAppViewContainer"] > section,
+[data-testid="stMain"],
+.main, .block-container,
+[data-testid="stSidebar"] {
+    background-color: #FAF7F4 !important;
+    color: #1A0A2E !important;
+}
+/* Force all Streamlit text elements to dark */
+p, span, label, div, li, td, th, caption,
+[class*="st-"], [data-testid] {
+    color: #1A0A2E;
+}
+/* Input fields — force light */
+[data-testid="stNumberInput"] input,
+[data-testid="stTextInput"] input,
+[data-testid="stSelectbox"] select,
+.stSelectbox > div > div,
+[data-baseweb="select"] > div,
+[data-baseweb="input"] > div {
+    background-color: #FFFFFF !important;
+    color: #1A0A2E !important;
+    border-color: #C4B8DE !important;
+}
+/* Radio button labels */
+[data-testid="stRadio"] label span,
+[data-testid="stRadio"] label p {
+    color: #1A0A2E !important;
+}
+/* Checkbox labels */
+[data-testid="stCheckbox"] label span,
+[data-testid="stCheckbox"] label p {
+    color: #1A0A2E !important;
+    font-size: 0.9rem !important;
+}
+/* Captions and help text */
+[data-testid="stCaptionContainer"] p,
+small, .stCaption {
+    color: #5E4D78 !important;
+}
+/* Markdown text */
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] li,
+[data-testid="stMarkdownContainer"] span {
+    color: #1A0A2E !important;
+}
+/* step subtitle gets slightly muted */
+.step-subtitle,
+[data-testid="stMarkdownContainer"] .step-subtitle {
+    color: #3D2C5C !important;
+}
 
-/* Base */
+/* ── TYPOGRAPHY ───────────────────────────────────────────────────────────── */
 html, body, [class*="css"] {
     font-family: 'DM Sans', sans-serif;
-    background-color: #FAF7F4;
 }
-h1, h2, h3 {
-    font-family: 'DM Serif Display', serif;
+h1, h2, h3, .step-title {
+    font-family: 'DM Serif Display', serif !important;
     letter-spacing: -0.02em;
+    color: #1A0A2E !important;
 }
+.step-subtitle { color: #3D2C5C; font-size: 0.95rem; margin-bottom: 1.5rem; }
 
-/* Hide default streamlit chrome */
+/* ── LAYOUT ───────────────────────────────────────────────────────────────── */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 header {visibility: hidden;}
+.block-container { max-width: 820px; padding-top: 2rem; padding-bottom: 4rem; }
 
-/* Main container */
-.block-container {
-    max-width: 820px;
-    padding-top: 2rem;
-    padding-bottom: 4rem;
-}
-
-/* Card containers */
+/* ── CARDS ────────────────────────────────────────────────────────────────── */
 .card {
-    background: white;
+    background: #FFFFFF !important;
     border-radius: 16px;
     padding: 1.5rem 2rem;
     border: 1px solid #DDD5EC;
     margin-bottom: 1rem;
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    color: #1A0A2E !important;
 }
-.card-green  { border-left: 4px solid #1E5C3A; background: #E8F5EE; }
-.card-amber  { border-left: 4px solid #7A4F00; background: #FEF9ED; }
-.card-red    { border-left: 4px solid #8B1A1A; background: #FDF0F0; }
-.card-blue   { border-left: 4px solid #6B3FA0; background: #F3EDFA; }
-.card-purple { border-left: 4px solid #6B3FA0; background: #F3EDFA; }
-.card-slate  { border-left: 4px solid #5E4D78; background: #FAF7F4; }
+.card p, .card span, .card div, .card li { color: #1A0A2E !important; }
+.card-green  { border-left: 4px solid #1E5C3A !important; background: #E8F5EE !important; }
+.card-green  p, .card-green span, .card-green li { color: #1A3020 !important; }
+.card-amber  { border-left: 4px solid #7A4F00 !important; background: #FEF9ED !important; }
+.card-amber  p, .card-amber span, .card-amber li { color: #3D2700 !important; }
+.card-red    { border-left: 4px solid #8B1A1A !important; background: #FDF0F0 !important; }
+.card-red    p, .card-red span, .card-red li { color: #4A0D0D !important; }
+.card-blue   { border-left: 4px solid #6B3FA0 !important; background: #F3EDFA !important; }
+.card-blue   p, .card-blue span, .card-blue li { color: #2A1050 !important; }
+.card-purple { border-left: 4px solid #6B3FA0 !important; background: #F3EDFA !important; }
+.card-slate  { border-left: 4px solid #5E4D78 !important; background: #FAF7F4 !important; }
 
-/* Hero header */
+/* ── HERO HEADER ──────────────────────────────────────────────────────────── */
 .app-header {
     background: linear-gradient(135deg, #3D1A5C 0%, #6B3FA0 100%);
-    color: white;
+    color: white !important;
     border-radius: 20px;
     padding: 2.5rem 2.5rem 2rem;
     margin-bottom: 2rem;
-    box-shadow: 0 8px 32px rgba(30,58,95,0.18);
+    box-shadow: 0 8px 32px rgba(61,26,92,0.25);
 }
-.app-header h1 { color: white; margin: 0; font-size: 2.1rem; }
-.app-header p  { color: #E8D9F8; margin: 0.4rem 0 0; font-size: 1.05rem; }
+.app-header h1, .app-header p, .app-header span { color: white !important; }
+.app-header h1 { margin: 0; font-size: 2.1rem; }
+.app-header p  { color: #E8D9F8 !important; margin: 0.4rem 0 0; font-size: 1.05rem; }
 
-/* Progress bar */
+/* ── PROGRESS BAR ─────────────────────────────────────────────────────────── */
 .progress-wrap  { margin: 0 0 2rem; }
-.progress-label { display: flex; justify-content: space-between; font-size: 0.78rem; color: #5E4D78; margin-bottom: 6px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 0.78rem; color: #3D2C5C !important; margin-bottom: 6px; }
+.progress-label strong { color: #3D1A5C !important; }
 .progress-track { background: #D4C9E8; border-radius: 99px; height: 8px; width: 100%; overflow: hidden; }
-.progress-fill  { background: linear-gradient(90deg, #6B3FA0, #9B72CF); height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+.progress-fill  { background: linear-gradient(90deg, #3D1A5C, #9B72CF); height: 100%; border-radius: 99px; transition: width 0.4s ease; }
 
-/* Step title */
-.step-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.75rem;
-    color: #1A0A2E;
-    margin: 0 0 0.3rem;
-}
-.step-subtitle { color: #5E4D78; font-size: 0.95rem; margin-bottom: 1.5rem; }
+/* ── KPI GRID ─────────────────────────────────────────────────────────────── */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.kpi-box  { background: #FFFFFF !important; border-radius: 12px; padding: 1rem; border: 1px solid #D4C9E8; text-align: center; }
+.kpi-box .label { font-size: 0.72rem; color: #5E4D78 !important; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+.kpi-box .value { font-size: 1.5rem; font-weight: 700; color: #3D1A5C !important; margin-top: 2px; }
 
-/* KPI grid */
-.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 1rem 0; }
-.kpi-box  { background: white; border-radius: 12px; padding: 1rem; border: 1px solid #D4C9E8; text-align: center; }
-.kpi-box .label { font-size: 0.75rem; color: #5E4D78; text-transform: uppercase; letter-spacing: 0.05em; }
-.kpi-box .value { font-size: 1.6rem; font-weight: 700; color: #3D1A5C; margin-top: 2px; }
-
-/* Metric bar */
-.metric-bar-wrap { margin: 0.6rem 0; }
-.metric-bar-label { display: flex; justify-content: space-between; font-size: 0.82rem; color: #3D2C5C; margin-bottom: 4px; }
-.metric-bar-track { background: #D4C9E8; border-radius: 99px; height: 10px; }
-.metric-bar-fill  { height: 100%; border-radius: 99px; }
-
-/* Citation block */
+/* ── CITATION ─────────────────────────────────────────────────────────────── */
 .citation {
-    font-size: 0.72rem;
-    color: #5E4D78;
-    background: #FAF7F4;
+    font-size: 0.78rem;
+    color: #3D2C5C !important;
+    background: #FAF7F4 !important;
     border-radius: 8px;
-    padding: 0.75rem 1rem;
+    padding: 0.85rem 1rem;
     margin-top: 1rem;
-    border-left: 3px solid #C4B8DE;
-    line-height: 1.5;
+    border-left: 3px solid #6B3FA0;
+    line-height: 1.6;
 }
+.citation a { color: #6B3FA0 !important; }
 
-/* Nav buttons */
+/* ── NAV BUTTONS ──────────────────────────────────────────────────────────── */
 .stButton > button {
     border-radius: 10px !important;
-    font-weight: 500 !important;
+    font-weight: 600 !important;
     font-family: 'DM Sans', sans-serif !important;
     transition: all 0.2s ease !important;
+    font-size: 0.95rem !important;
 }
 div[data-testid="column"]:first-child .stButton > button {
     background: #F2EDF9 !important;
-    color: #3D2C5C !important;
-    border: 1px solid #D4C9E8 !important;
+    color: #3D1A5C !important;
+    border: 2px solid #C4B8DE !important;
 }
 div[data-testid="column"]:last-child .stButton > button {
     background: linear-gradient(135deg, #3D1A5C, #6B3FA0) !important;
@@ -144,41 +176,94 @@ div[data-testid="column"]:last-child .stButton > button {
     border: none !important;
 }
 
-/* Checkbox styling */
-.stCheckbox label span { font-size: 0.9rem; }
+/* ── SECTION DIVIDER ──────────────────────────────────────────────────────── */
+.divider { border: none; border-top: 2px solid #D4C9E8; margin: 2rem 0; }
 
-/* Section divider */
-.divider { border: none; border-top: 1px solid #D4C9E8; margin: 1.5rem 0; }
-
-/* Action item */
+/* ── ACTION ITEMS ─────────────────────────────────────────────────────────── */
 .action-item {
     display: flex; gap: 12px; align-items: flex-start;
-    background: white; border-radius: 12px;
+    background: #FFFFFF !important; border-radius: 12px;
     padding: 1rem 1.2rem; margin-bottom: 0.75rem;
     border: 1px solid #D4C9E8;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 .action-icon { font-size: 1.4rem; flex-shrink: 0; }
-.action-text strong { display: block; font-size: 0.92rem; color: #1A0A2E; margin-bottom: 2px; }
-.action-text span   { font-size: 0.82rem; color: #5E4D78; }
+.action-text strong { display: block; font-size: 0.92rem; color: #1A0A2E !important; margin-bottom: 4px; }
+.action-text span   { font-size: 0.85rem; color: #3D2C5C !important; line-height: 1.5; }
 
-/* Priority badge */
+/* ── PRIORITY BADGES ──────────────────────────────────────────────────────── */
 .badge {
-    display: inline-block; font-size: 0.68rem; font-weight: 600;
-    padding: 2px 8px; border-radius: 99px; margin-left: 6px;
+    display: inline-block; font-size: 0.7rem; font-weight: 700;
+    padding: 2px 10px; border-radius: 99px; margin-left: 6px;
     text-transform: uppercase; letter-spacing: 0.06em;
 }
-.badge-critical { background: #FDEAEA; color: #8B1A1A; }
-.badge-high     { background: #FEF4DC; color: #7A4F00; }
-.badge-medium   { background: #EDE5F5; color: #3D1A5C; }
-.badge-good     { background: #E4F4EC; color: #1E5C3A; }
+.badge-critical { background: #FDEAEA; color: #8B1A1A !important; border: 1px solid #8B1A1A; }
+.badge-high     { background: #FEF4DC; color: #7A4F00 !important; border: 1px solid #7A4F00; }
+.badge-medium   { background: #EDE5F5; color: #3D1A5C !important; border: 1px solid #6B3FA0; }
+.badge-good     { background: #E4F4EC; color: #1E5C3A !important; border: 1px solid #1E5C3A; }
 
-/* Benchmark table */
+/* ── BENCHMARK TABLE ──────────────────────────────────────────────────────── */
 .bench-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
-.bench-table th { background: #3D1A5C; color: white; padding: 8px 12px; text-align: left; }
-.bench-table td { padding: 7px 12px; border-bottom: 1px solid #D4C9E8; }
-.bench-table tr.highlight td { background: #EDE5F5; font-weight: 600; }
-.bench-table tr:hover td { background: #FAF7F4; }
+.bench-table th { background: #3D1A5C !important; color: white !important; padding: 10px 14px; text-align: left; font-weight: 600; }
+.bench-table td { padding: 9px 14px; border-bottom: 1px solid #D4C9E8; color: #1A0A2E !important; background: #FFFFFF; }
+.bench-table tr.highlight td { background: #EDE5F5 !important; font-weight: 700; color: #1A0A2E !important; }
+.bench-table tr:hover td { background: #FAF7F4 !important; }
+
+/* ── NET WORTH RESPONSIVE GRID ────────────────────────────────────────────── */
+.nw-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+@media (max-width: 640px) {
+    .nw-grid { grid-template-columns: 1fr; }
+}
+.nw-section h4 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid;
+}
+.nw-section.assets h4  { color: #1E5C3A !important; border-color: #1E5C3A; }
+.nw-section.liabs  h4  { color: #8B1A1A !important; border-color: #8B1A1A; }
+
+/* ── CFPB INSTRUMENT ──────────────────────────────────────────────────────── */
+.cfpb-part-header {
+    background: #3D1A5C !important;
+    color: white !important;
+    border-radius: 10px 10px 0 0;
+    padding: 0.85rem 1.2rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-top: 1.5rem;
+    line-height: 1.4;
+}
+.cfpb-q-label {
+    font-size: 0.95rem;
+    color: #1A0A2E !important;
+    font-weight: 600;
+    margin: 1rem 0 0.4rem;
+    line-height: 1.45;
+}
+.cfpb-divider {
+    border: none;
+    border-top: 1px solid #EDE5F5;
+    margin: 0.5rem 0 0;
+}
+
+/* ── BLS HINT BOX ─────────────────────────────────────────────────────────── */
+.bls-hint {
+    font-size: 0.78rem;
+    color: #3D2C5C !important;
+    background: #F3EDFA !important;
+    border-radius: 6px;
+    padding: 0.4rem 0.7rem;
+    margin-top: -0.5rem;
+    margin-bottom: 0.75rem;
+    border-left: 3px solid #6B3FA0;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -215,9 +300,10 @@ DEFAULTS = {
     # Cash Flow
     "income_net": 4500,
     "exp": {
-        "housing": 1200, "transport": 400, "insurance": 250, "debt_min": 150,
-        "groceries": 400, "utilities": 150, "personal": 100,
-        "entertainment": 200, "other_flex": 100,
+        "housing": 1200, "utilities": 150, "transport": 400,
+        "insurance": 250, "debt_min": 150,
+        "groceries": 400, "entertainment": 200,
+        "personal": 100, "other_flex": 100,
     },
     "occ_annual": 1800,
     # Emergency Fund
@@ -326,13 +412,12 @@ def cfpb_age_median(age):
 
 def monthly_expenses():
     exp = ss("exp")
-    fixed = sum([exp.get("housing", 0), exp.get("transport", 0),
-                 exp.get("insurance", 0), exp.get("debt_min", 0)])
-    flex  = sum([exp.get("groceries", 0), exp.get("utilities", 0),
-                 exp.get("personal", 0), exp.get("entertainment", 0),
-                 exp.get("other_flex", 0)])
-    occ   = ss("occ_annual") / 12
-    return fixed + flex + occ
+    total = sum(exp.get(k, 0) for k in [
+        "housing", "utilities", "transport", "insurance", "debt_min",
+        "groceries", "entertainment", "personal", "other_flex"
+    ])
+    occ = ss("occ_annual") / 12
+    return total + occ
 
 def net_worth():
     nw = ss("nw")
@@ -442,11 +527,36 @@ CFPB_ITEMS = [
 ]
 
 # ─────────────────────────────────────────────
+# BLS CONSUMER EXPENDITURE SURVEY 2022 — Monthly averages by region
+# Source: U.S. Bureau of Labor Statistics, Consumer Expenditure Survey, 2022.
+# Table 1101. Quintiles of income before taxes: Annual expenditure means.
+# Regional data from BLS CE Survey 2022 regional tables (annual ÷ 12).
+# ─────────────────────────────────────────────
+BLS_MONTHLY = {
+    # (shelter/mortgage, utilities, transport, groceries, dining_out, healthcare, entertainment, personal_care)
+    "National Average": (1208, 385, 1025, 475, 303, 488, 288, 64),
+    "Northeast":        (1452, 420, 1010, 540, 335, 460, 300, 72),
+    "Midwest":          (1038, 418, 1058, 452, 268, 528, 268, 60),
+    "South":            (1095, 408, 1082, 445, 288, 498, 262, 58),
+    "West":             (1548, 378, 1092, 495, 355, 510, 338, 74),
+}
+
+def bls_hint(region, field):
+    """Return a BLS average monthly dollar amount for the given field."""
+    keys = ["housing", "utilities", "transport", "groceries",
+            "dining_out", "healthcare", "entertainment", "personal_care"]
+    vals = BLS_MONTHLY.get(region, BLS_MONTHLY["National Average"])
+    if field in keys:
+        amt = vals[keys.index(field)]
+        return f'<div class="bls-hint">BLS national avg (2022): ~${amt:,}/mo for {region}</div>'
+    return ""
+
+# ─────────────────────────────────────────────
 # PROGRESS HEADER
 # ─────────────────────────────────────────────
 STEPS = [
-    "Welcome", "About You", "Goal Setting", "CFPB Well-Being",
-    "Financial Confidence", "Net Worth", "Cash Flow",
+    "Welcome", "About You", "Goal Setting", "Well-Being Scale",
+    "Your Score", "Financial Confidence", "Net Worth", "Cash Flow",
     "Emergency Fund", "Retirement", "Action Plan"
 ]
 
@@ -624,15 +734,13 @@ def step_goals():
 
     for cat, items in GOAL_CATS.items():
         st.markdown(f"**{cat}**")
-        cols = st.columns(2)
-        for i, item in enumerate(items):
-            with cols[i % 2]:
-                checked = st.checkbox(item, value=(item in current_goals),
-                                      key=f"goal_{item.replace(' ','_')[:30]}")
-                if checked:
-                    current_goals.add(item)
-                else:
-                    current_goals.discard(item)
+        for item in items:
+            checked = st.checkbox(item, value=(item in current_goals),
+                                  key=f"goal_{item.replace(' ','_')[:30]}")
+            if checked:
+                current_goals.add(item)
+            else:
+                current_goals.discard(item)
 
     ss_set("goals", list(current_goals))
     n = len(current_goals)
@@ -810,13 +918,14 @@ def _compute_cfpb_score():
     return cfpb_raw_to_score(raw, age=ss("age")), raw
 
 
-# ─────────────────────────────────────────────
-# STEP 4 — FINANCIAL CONFIDENCE (+ CFPB score reveal)
-# ─────────────────────────────────────────────
-def step_confidence():
-    render_header(); render_progress()
 
-    # ── CFPB Score Reveal ────────────────────
+# ─────────────────────────────────────────────
+# STEP 4 — CFPB SCORE REVEAL (standalone)
+# ─────────────────────────────────────────────
+def step_cfpb_score():
+    render_header(); render_progress()
+    st.markdown('<p class="step-title">Your Financial Well-Being Score</p>', unsafe_allow_html=True)
+
     score, raw = _compute_cfpb_score()
     age        = ss("age")
     peer_med   = cfpb_age_median(age)
@@ -832,15 +941,15 @@ def step_confidence():
     if score >= 61:
         sc_color = "#1E5C3A"
         sc_tier  = "High financial well-being"
-        sc_msg   = ("You report relatively high financial well-being. You feel in control of your day-to-day finances, "
-                    "can absorb financial shocks, and are on track toward your goals. Focus on maintaining "
-                    "these habits and building on your strong foundation.")
+        sc_msg   = ("You report relatively high financial well-being — you feel in control of your day-to-day finances, "
+                    "can absorb financial shocks, and are generally on track toward your goals. "
+                    "Focus on maintaining these habits and building on this foundation.")
     elif score >= 41:
         sc_color = "#7A4F00"
         sc_tier  = "Moderate financial well-being"
         sc_msg   = ("You report moderate financial well-being — the most common range for working-age Americans. "
-                    "Some areas feel manageable while others create stress. The personalized action plan "
-                    "at the end of this assessment will highlight the highest-impact improvements.")
+                    "Some areas feel manageable while others create stress. "
+                    "The personalized action plan at the end of this assessment will identify the highest-impact improvements.")
     else:
         sc_color = "#8B1A1A"
         sc_tier  = "Lower financial well-being"
@@ -853,40 +962,34 @@ def step_confidence():
                 else f"<strong style='color:#8B1A1A'>{diff} below</strong>" if diff < 0
                 else "<strong>equal to</strong>")
 
-    # Score gauge bar
-    gauge_pct = score  # 0–100
     st.markdown(f"""
-    <div class="card" style="border-left:4px solid {sc_color};background:#fafafa;padding:1.5rem 2rem;">
-        <div style="font-size:0.75rem;color:#5E4D78;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.25rem;">
+    <div class="card" style="border-left:5px solid {sc_color};background:#FFFFFF;padding:1.75rem 2rem;">
+        <div style="font-size:0.75rem;color:#5E4D78;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:0.5rem;">
             Your CFPB Financial Well-Being Score
         </div>
-        <div style="display:flex;align-items:flex-end;gap:1rem;flex-wrap:wrap;">
-            <div style="font-size:4.5rem;font-weight:800;color:{sc_color};line-height:1;">{score}</div>
+        <div style="display:flex;align-items:flex-end;gap:1.25rem;flex-wrap:wrap;">
+            <div style="font-size:5rem;font-weight:800;color:{sc_color};line-height:1;">{score}</div>
             <div style="flex:1;min-width:180px;">
-                <div style="font-size:0.9rem;font-weight:600;color:#1A0A2E;">{sc_tier}</div>
-                <div style="font-size:0.82rem;color:#5E4D78;margin-top:2px;">out of 100 &nbsp;·&nbsp; Raw total: {raw}/40</div>
-                <div style="font-size:0.82rem;color:#3D2C5C;margin-top:4px;">
+                <div style="font-size:1.05rem;font-weight:700;color:#1A0A2E;">{sc_tier}</div>
+                <div style="font-size:0.82rem;color:#3D2C5C;margin-top:4px;">out of 100 &nbsp;·&nbsp; Raw total: {raw}/40</div>
+                <div style="font-size:0.85rem;color:#1A0A2E;margin-top:6px;font-weight:500;">
                     {diff_txt} the median for U.S. adults ages {age_label} (median: {peer_med})
                 </div>
             </div>
         </div>
-
-        <!-- Gauge bar -->
-        <div style="margin-top:1rem;">
-            <div style="position:relative;height:18px;background:#D4C9E8;border-radius:99px;overflow:hidden;">
-                <div style="width:{gauge_pct}%;height:100%;background:linear-gradient(90deg,#8B1A1A 0%,#7A4F00 40%,#1E5C3A 70%);border-radius:99px;transition:width 0.5s;"></div>
+        <div style="margin-top:1.25rem;">
+            <div style="position:relative;height:20px;background:#D4C9E8;border-radius:99px;overflow:hidden;">
+                <div style="width:{score}%;height:100%;background:linear-gradient(90deg,#8B1A1A 0%,#7A4F00 35%,#1E5C3A 65%);border-radius:99px;"></div>
             </div>
-            <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:#5E4D78;margin-top:4px;">
+            <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:#3D2C5C;margin-top:6px;font-weight:500;">
                 <span>0 — Lower</span><span>40</span><span>Moderate — 60</span><span>80</span><span>Higher — 100</span>
             </div>
         </div>
-
-        <p style="font-size:0.88rem;color:#3D2C5C;margin-top:1rem;line-height:1.55;">{sc_msg}</p>
+        <p style="font-size:0.9rem;color:#1A0A2E;margin-top:1.25rem;line-height:1.6;">{sc_msg}</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Age-group comparison table
-    st.markdown("**How scores compare across age groups** *(CFPB National Survey, 2017)*")
+    st.markdown("**How your score compares to U.S. adults by age group** *(CFPB National Financial Well-Being Survey, 2017)*")
     AGE_MEDIANS = [
         ("18–24", 51), ("25–34", 52), ("35–44", 54),
         ("45–54", 54), ("55–61", 55), ("62–69", 59), ("70+", 62),
@@ -894,35 +997,46 @@ def step_confidence():
     rows = ""
     for ag, med in AGE_MEDIANS:
         hl = ' class="highlight"' if ag == age_label else ""
-        you_col = (f"<strong style='color:{sc_color}'>{score} (you)</strong>"
-                   if ag == age_label else "")
-        rows += f"<tr{hl}><td>{'▶ ' if ag==age_label else ''}{ag}</td><td style='text-align:center'>{med}</td><td style='text-align:center'>{you_col}</td></tr>"
+        you_col = (f"<strong style='color:{sc_color}'>{score}</strong>" if ag == age_label else "")
+        rows += f"<tr{hl}><td style='color:#1A0A2E'>{'▶ ' if ag==age_label else ''}{ag}</td><td style='text-align:center;color:#1A0A2E'>{med}</td><td style='text-align:center'>{you_col}</td></tr>"
 
     st.markdown(f"""
     <table class="bench-table">
-        <thead>
-            <tr>
-                <th>Age Group</th>
-                <th style="text-align:center">Median Score</th>
-                <th style="text-align:center">Your Score</th>
-            </tr>
-        </thead>
+        <thead><tr><th>Age Group</th><th style="text-align:center">Median Score</th><th style="text-align:center">Your Score</th></tr></thead>
         <tbody>{rows}</tbody>
     </table>
-    <p style="font-size:0.78rem;color:#5E4D78;margin-top:0.5rem;">
-        Scores are produced using the CFPB official lookup table adjusted for age and self-administration.
-        Financial well-being is best understood as progress over time — not a fixed pass/fail threshold.
+    <p style="font-size:0.8rem;color:#3D2C5C;margin-top:0.75rem;">
+        Scores use the official CFPB lookup table (self-administered, adjusted for age).
+        Well-being is best understood as progress over time — not a pass/fail threshold.
     </p>
     """, unsafe_allow_html=True)
 
-    st.markdown("<hr class='divider'>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="citation">
+        <strong>Sources:</strong><br>
+        Consumer Financial Protection Bureau. (2017). <em>CFPB Financial Well-Being Scale: Scale development technical report.</em>
+        <a href="https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-scale/">
+        https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-scale/</a><br>
+        Consumer Financial Protection Bureau. (2017). <em>Financial well-being in America.</em>
+        <a href="https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-in-america/">
+        https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-in-america/</a>
+        (age-group median scores)
+    </div>
+    """, unsafe_allow_html=True)
 
-    # ── Financial Confidence ─────────────────
+    nav_buttons()
+
+
+# ─────────────────────────────────────────────
+# STEP 5 — FINANCIAL CONFIDENCE (standalone)
+# ─────────────────────────────────────────────
+def step_confidence():
+    render_header(); render_progress()
     st.markdown('<p class="step-title">Financial Confidence</p>', unsafe_allow_html=True)
     st.markdown("""
     <p class="step-subtitle">
-        Rate your confidence in each area from 1 (Not confident) to 5 (Very confident).
-        Research shows that both overconfidence and underconfidence impair financial decision-making.
+        Rate your confidence in each area from 1 (Not at all confident) to 5 (Very confident).
+        Research shows both overconfidence and underconfidence impair financial decision-making.
     </p>
     """, unsafe_allow_html=True)
 
@@ -937,7 +1051,7 @@ def step_confidence():
         "estate":     "Estate planning (will, beneficiaries)",
     }
     conf = ss("conf")
-    options = ["1 – Not confident", "2 – Slightly", "3 – Moderately",
+    options = ["1 – Not at all", "2 – Slightly", "3 – Moderately",
                "4 – Confident", "5 – Very confident"]
 
     for key, label in CONF_AREAS.items():
@@ -946,31 +1060,32 @@ def step_confidence():
         choice = st.radio(label, options=options, index=current, horizontal=True,
                           label_visibility="collapsed", key=f"conf_{key}")
         conf[key] = int(choice[0])
+        st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
 
     ss_set("conf", conf)
     avg = sum(conf.values()) / len(conf)
     low_areas = [CONF_AREAS[k] for k, v in conf.items() if v <= 2]
 
     conf_color = "#1E5C3A" if avg >= 4 else "#7A4F00" if avg >= 3 else "#8B1A1A"
+    low_html = ""
+    if low_areas:
+        items_html = "".join(f"<li style='color:#8B1A1A'>{a}</li>" for a in low_areas)
+        low_html = f"<br><br><strong style='color:#8B1A1A'>Areas rated ≤ 2 — consider targeted education or professional guidance:</strong><ul style='font-size:0.88rem;margin:0.4rem 0 0;padding-left:1.3rem;'>{items_html}</ul>"
+
     st.markdown(f"""
-    <div class="card" style="border-left:4px solid {conf_color};margin-top:1.5rem;">
-        <strong>Average Confidence: {avg:.1f} / 5</strong><br>
-        <span style="font-size:0.88rem;color:#3D2C5C;">
+    <div class="card" style="border-left:5px solid {conf_color};margin-top:1.5rem;">
+        <div style="font-size:1rem;font-weight:700;color:#1A0A2E;">Average Confidence: {avg:.1f} / 5</div>
+        <div style="font-size:0.9rem;color:#3D2C5C;margin-top:0.4rem;">
         {"Strong overall confidence — maintain and build on it." if avg >= 4
-         else "Moderate confidence — target low-rated areas for education or professional advice." if avg >= 3
-         else "Several areas need attention — consider financial education or professional guidance."}
-        </span>
-        {"<br><br><strong style='color:#8B1A1A'>Areas rated ≤ 2 (priority for improvement):</strong><ul style='font-size:0.85rem;color:#8B1A1A;margin:0.3rem 0 0;padding-left:1.2rem;'>" + "".join(f"<li>{a}</li>" for a in low_areas) + "</ul>" if low_areas else ""}
+         else "Moderate confidence — target lower-rated areas for education or professional advice." if avg >= 3
+         else "Several areas need attention — consider financial education or one-on-one guidance."}
+        </div>
+        {low_html}
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("""
     <div class="citation">
-        <strong>Sources:</strong><br>
-        Consumer Financial Protection Bureau. (2017). <em>Financial well-being in America.</em>
-        <a href="https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-in-america/">
-        https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-in-america/</a>
-        (age-group median scores, Table 1)<br>
         Parker, A. M., de Bruin, W. B., Yoong, J., &amp; Willis, R. (2012). Inappropriate confidence and retirement planning:
         Four studies with a national sample. <em>Journal of Behavioral Decision Making, 25</em>(4), 382–389.
         <a href="https://doi.org/10.1002/bdm.745">https://doi.org/10.1002/bdm.745</a>
@@ -979,79 +1094,92 @@ def step_confidence():
 
     nav_buttons()
 
+
 # ─────────────────────────────────────────────
-# STEP 5 — NET WORTH
+# STEP 6 — NET WORTH
 # ─────────────────────────────────────────────
 def step_networth():
     render_header(); render_progress()
     st.markdown('<p class="step-title">Net Worth Calculation</p>', unsafe_allow_html=True)
-    st.markdown('<p class="step-subtitle">Your net worth (assets minus liabilities) is a foundational measure of financial health.</p>', unsafe_allow_html=True)
+    st.markdown('<p class="step-subtitle">Your net worth (assets minus liabilities) is a snapshot of your overall financial position. On desktop, assets appear left and liabilities right.</p>', unsafe_allow_html=True)
 
     nw = ss("nw")
 
-    st.markdown("#### 🟢 Assets")
-    nw["cash"]             = st.number_input("Cash & Checking accounts", 0, 50_000_000,
-        nw.get("cash", 0), step=500, format="%d", key="nw_cash")
-    nw["savings_nw"]       = st.number_input("Savings accounts / CDs", 0, 50_000_000,
-        nw.get("savings_nw", 0), step=500, format="%d", key="nw_savings_nw")
-    nw["investments"]      = st.number_input("Taxable brokerage / investments", 0, 50_000_000,
-        nw.get("investments", 0), step=500, format="%d", key="nw_investments")
-    nw["retirement_accts"] = st.number_input("All retirement accounts (401k, IRA, Roth, etc.)", 0, 50_000_000,
-        nw.get("retirement_accts", 0), step=500, format="%d", key="nw_retirement_accts")
-    nw["home"]             = st.number_input("Primary home / real estate value", 0, 50_000_000,
-        nw.get("home", 0), step=500, format="%d", key="nw_home")
-    nw["vehicle"]          = st.number_input("Vehicle(s) value", 0, 500_000,
-        nw.get("vehicle", 0), step=500, format="%d", key="nw_vehicle")
+    # Use two Streamlit columns — they stack naturally on narrow screens
+    col_a, col_l = st.columns(2, gap="large")
 
-    st.markdown("#### 🔴 Liabilities")
-    nw["cc_debt"]      = st.number_input("Credit card debt", 0, 1_000_000,
-        nw.get("cc_debt", 0), step=500, format="%d", key="nw_cc_debt")
-    nw["student"]      = st.number_input("Student loans", 0, 1_000_000,
-        nw.get("student", 0), step=500, format="%d", key="nw_student")
-    nw["auto_loan"]    = st.number_input("Auto loan(s)", 0, 200_000,
-        nw.get("auto_loan", 0), step=500, format="%d", key="nw_auto_loan")
-    nw["mortgage"]     = st.number_input("Mortgage balance", 0, 10_000_000,
-        nw.get("mortgage", 0), step=500, format="%d", key="nw_mortgage")
-    nw["personal_loan"]= st.number_input("Personal / other loans", 0, 500_000,
-        nw.get("personal_loan", 0), step=500, format="%d", key="nw_personal_loan")
-    nw["other_debt"]   = st.number_input("Other debts (HELOC, medical, etc.)", 0, 500_000,
-        nw.get("other_debt", 0), step=500, format="%d", key="nw_other_debt")
+    with col_a:
+        st.markdown("#### 🟢 Assets")
+        nw["cash"]             = st.number_input("Cash & Checking", 0, 50_000_000,
+            nw.get("cash", 0), step=500, format="%d", key="nw_cash")
+        nw["savings_nw"]       = st.number_input("Savings / CDs", 0, 50_000_000,
+            nw.get("savings_nw", 0), step=500, format="%d", key="nw_savings_nw")
+        nw["investments"]      = st.number_input("Taxable investments", 0, 50_000_000,
+            nw.get("investments", 0), step=500, format="%d", key="nw_investments")
+        nw["retirement_accts"] = st.number_input("Retirement accounts (401k/IRA/Roth)", 0, 50_000_000,
+            nw.get("retirement_accts", 0), step=500, format="%d", key="nw_retirement_accts")
+        nw["home"]             = st.number_input("Home / real estate value", 0, 50_000_000,
+            nw.get("home", 0), step=500, format="%d", key="nw_home")
+        nw["vehicle"]          = st.number_input("Vehicle(s) value", 0, 500_000,
+            nw.get("vehicle", 0), step=500, format="%d", key="nw_vehicle")
+
+    with col_l:
+        st.markdown("#### 🔴 Liabilities")
+        nw["cc_debt"]       = st.number_input("Credit card debt", 0, 1_000_000,
+            nw.get("cc_debt", 0), step=500, format="%d", key="nw_cc_debt")
+        nw["student"]       = st.number_input("Student loans", 0, 1_000_000,
+            nw.get("student", 0), step=500, format="%d", key="nw_student")
+        nw["auto_loan"]     = st.number_input("Auto loan(s)", 0, 200_000,
+            nw.get("auto_loan", 0), step=500, format="%d", key="nw_auto_loan")
+        nw["mortgage"]      = st.number_input("Mortgage balance", 0, 10_000_000,
+            nw.get("mortgage", 0), step=500, format="%d", key="nw_mortgage")
+        nw["personal_loan"] = st.number_input("Personal / other loans", 0, 500_000,
+            nw.get("personal_loan", 0), step=500, format="%d", key="nw_personal_loan")
+        nw["other_debt"]    = st.number_input("Other debts (HELOC, medical, etc.)", 0, 500_000,
+            nw.get("other_debt", 0), step=500, format="%d", key="nw_other_debt")
 
     ss_set("nw", nw)
     assets, liabs, total = net_worth()
     bracket = age_bracket(ss("age"))
     bench_med, bench_p75 = NW_BENCH[bracket]
-    scf_ret = SCF_RET[bracket]
 
     nw_color = "#1E5C3A" if total > bench_med else "#7A4F00"
-    tier = ("Top 25%" if total > bench_p75
-            else "Above median" if total > bench_med
-            else "Below median")
+    tier = ("Top 25% for your age group" if total > bench_p75
+            else "Above median for your age group" if total > bench_med
+            else "Below median for your age group")
 
     st.markdown(f"""
-    <div class="card" style="border-left:4px solid {nw_color};margin-top:1.5rem;">
+    <div class="card" style="border-left:5px solid {nw_color};margin-top:1.5rem;">
         <div class="kpi-grid">
-            <div class="kpi-box"><div class="label">Total Assets</div><div class="value">{fmt_dollar(assets)}</div></div>
-            <div class="kpi-box"><div class="label">Total Liabilities</div><div class="value" style="color:#8B1A1A">{fmt_dollar(liabs)}</div></div>
-            <div class="kpi-box"><div class="label">Net Worth</div><div class="value" style="color:{nw_color}">{fmt_dollar(total)}</div></div>
+            <div class="kpi-box">
+                <div class="label">Total Assets</div>
+                <div class="value" style="color:#1E5C3A">{fmt_dollar(assets)}</div>
+            </div>
+            <div class="kpi-box">
+                <div class="label">Total Liabilities</div>
+                <div class="value" style="color:#8B1A1A">{fmt_dollar(liabs)}</div>
+            </div>
+            <div class="kpi-box">
+                <div class="label">Net Worth</div>
+                <div class="value" style="color:{nw_color}">{fmt_dollar(total)}</div>
+            </div>
         </div>
-        <div style="margin-top:1rem;font-size:0.88rem;color:#3D2C5C;">
-            <strong>Your position among {bracket}-year-olds:</strong> {tier}
-            &nbsp;·&nbsp; Peer median: <strong>{fmt_dollar(bench_med)}</strong>
-            &nbsp;·&nbsp; 75th percentile: <strong>{fmt_dollar(bench_p75)}</strong>
+        <div style="margin-top:1rem;font-size:0.9rem;color:#1A0A2E;font-weight:500;">
+            {tier} &nbsp;·&nbsp;
+            Peer median: <strong>{fmt_dollar(bench_med)}</strong> &nbsp;·&nbsp;
+            75th percentile: <strong>{fmt_dollar(bench_p75)}</strong>
         </div>
-        <div style="margin-top:0.5rem;font-size:0.82rem;color:#5E4D78;">
-            ⚠️ Descriptive benchmark: reflects what peers <em>have</em>, not what is needed for financial security.
+        <div style="margin-top:0.5rem;font-size:0.82rem;color:#3D2C5C;">
+            ⚠️ <em>Descriptive benchmark only</em> — reflects what peers have, not what is needed for financial security.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Full benchmark table
     st.markdown("**Net Worth Benchmarks by Age — Federal Reserve SCF 2022**")
     rows = ""
     for ag, (med, p75) in NW_BENCH.items():
         hl = ' class="highlight"' if ag == bracket else ""
-        rows += f'<tr{hl}><td>{"▶ " if ag==bracket else ""}{ag}</td><td>{fmt_dollar(med)}</td><td>{fmt_dollar(p75)}</td></tr>'
+        rows += f'<tr{hl}><td style="color:#1A0A2E">{"▶ " if ag==bracket else ""}{ag}</td><td style="color:#1A0A2E">{fmt_dollar(med)}</td><td style="color:#1A0A2E">{fmt_dollar(p75)}</td></tr>'
     st.markdown(f"""
     <table class="bench-table">
         <thead><tr><th>Age Group</th><th>Median Net Worth</th><th>75th Percentile</th></tr></thead>
@@ -1061,56 +1189,81 @@ def step_networth():
 
     st.markdown("""
     <div class="citation">
-        <strong>Source:</strong><br>
         Board of Governors of the Federal Reserve System. (2023). <em>Survey of Consumer Finances, 2022.</em>
         <a href="https://www.federalreserve.gov/econres/scfindex.htm">https://www.federalreserve.gov/econres/scfindex.htm</a>
     </div>
     """, unsafe_allow_html=True)
+
 
     nav_buttons()
 
 # ─────────────────────────────────────────────
 # STEP 6 — CASH FLOW
 # ─────────────────────────────────────────────
+# ─────────────────────────────────────────────
+# STEP 7 — CASH FLOW
+# ─────────────────────────────────────────────
 def step_cashflow():
     render_header(); render_progress()
     st.markdown('<p class="step-title">Cash Flow Analysis</p>', unsafe_allow_html=True)
     st.markdown('<p class="step-subtitle">Understanding where your money goes is the foundation of financial planning.</p>', unsafe_allow_html=True)
 
+    region = ss("region")
+    bls = BLS_MONTHLY.get(region, BLS_MONTHLY["National Average"])
+    # indices: shelter, utilities, transport, groceries, dining_out, healthcare, entertainment, personal_care
+
+    st.markdown(f"""
+    <div class="card card-blue">
+        <strong>Reference figures: BLS Consumer Expenditure Survey 2022 — {region}</strong><br>
+        <span style="font-size:0.85rem;color:#2A1050;">
+        The dollar hints below show average monthly spending from the U.S. Bureau of Labor Statistics
+        Consumer Expenditure Survey 2022 for the <strong>{region}</strong> region of the United States.
+        These are <em>averages across all income levels</em> — your situation may differ.
+        All data are U.S.-based and expressed in 2022 dollars.
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+
     income = st.number_input("Monthly net (take-home) income after taxes ($)",
                              0, 100_000, ss("income_net"), step=100, format="%d")
     ss_set("income_net", income)
-
     gross_mo = ss("salary") / 12
     st.caption(f"Your estimated gross monthly income: {fmt_dollar(gross_mo)}")
 
     exp = ss("exp")
 
     st.markdown("#### Fixed Expenses *(same each month)*")
-    exp["housing"]  = st.number_input("Housing (rent or mortgage)",
+    st.markdown(f'<div class="bls-hint">BLS 2022 avg — Housing/shelter: ~${bls[0]:,}/mo · Utilities: ~${bls[1]:,}/mo ({region})</div>', unsafe_allow_html=True)
+    exp["housing"]  = st.number_input("Housing (rent or mortgage payment only)",
         0, 20_000, exp.get("housing", 0), step=50, format="%d", key="exp_housing")
-    exp["transport"] = st.number_input("Transportation (car payment, insurance, gas)",
+    exp["utilities"] = st.number_input("Utilities (electric, gas, water, internet, phone)",
+        0, 3_000, exp.get("utilities", 0), step=25, format="%d", key="exp_utilities")
+
+    st.markdown(f'<div class="bls-hint">BLS 2022 avg — Transportation: ~${bls[2]:,}/mo ({region}) — includes vehicle payments, gas, auto insurance, maintenance</div>', unsafe_allow_html=True)
+    exp["transport"] = st.number_input("Transportation (car payment, gas, auto insurance, transit)",
         0, 10_000, exp.get("transport", 0), step=25, format="%d", key="exp_transport")
+
     exp["insurance"] = st.number_input("Insurance (health, life, disability — not auto)",
         0, 5_000, exp.get("insurance", 0), step=25, format="%d", key="exp_insurance")
-    exp["debt_min"]  = st.number_input("Minimum debt payments (student loans, credit cards, etc.)",
+    exp["debt_min"]  = st.number_input("Minimum debt payments (student loans, credit cards, personal loans)",
         0, 10_000, exp.get("debt_min", 0), step=25, format="%d", key="exp_debt_min")
 
     st.markdown("#### Flexible Expenses *(variable each month)*")
+    st.markdown(f'<div class="bls-hint">BLS 2022 avg — Groceries: ~${bls[3]:,}/mo · Dining out: ~${bls[4]:,}/mo ({region})</div>', unsafe_allow_html=True)
     exp["groceries"]     = st.number_input("Groceries & household supplies",
         0, 5_000, exp.get("groceries", 0), step=25, format="%d", key="exp_groceries")
-    exp["utilities"]     = st.number_input("Utilities & phone",
-        0, 2_000, exp.get("utilities", 0), step=10, format="%d", key="exp_utilities")
+    exp["entertainment"] = st.number_input("Dining out & entertainment",
+        0, 5_000, exp.get("entertainment", 0), step=25, format="%d", key="exp_entertainment")
+
+    st.markdown(f'<div class="bls-hint">BLS 2022 avg — Healthcare out-of-pocket: ~${bls[5]:,}/mo · Entertainment/recreation: ~${bls[6]:,}/mo · Personal care: ~${bls[7]:,}/mo ({region})</div>', unsafe_allow_html=True)
     exp["personal"]      = st.number_input("Personal care & clothing",
         0, 3_000, exp.get("personal", 0), step=10, format="%d", key="exp_personal")
-    exp["entertainment"] = st.number_input("Entertainment & dining out",
-        0, 5_000, exp.get("entertainment", 0), step=25, format="%d", key="exp_entertainment")
-    exp["other_flex"]    = st.number_input("Other variable expenses",
+    exp["other_flex"]    = st.number_input("Other variable expenses (subscriptions, childcare, pet care, etc.)",
         0, 5_000, exp.get("other_flex", 0), step=25, format="%d", key="exp_other_flex")
 
     st.markdown("#### Occasional / Annual Expenses")
     occ = st.number_input(
-        "Annual total (gifts, travel, subscriptions, car maintenance, medical copays, etc.)",
+        "Annual total (gifts, travel, car maintenance, medical copays, home repairs, etc.)",
         0, 200_000, ss("occ_annual"), step=100, format="%d")
     ss_set("occ_annual", occ)
     ss_set("exp", exp)
@@ -1121,7 +1274,7 @@ def step_cashflow():
     if sr >= 20:
         sr_color, sr_msg = "#1E5C3A", "🌟 Excellent savings rate — on track for long-term security."
     elif sr >= 15:
-        sr_color, sr_msg = "#1E5C3A", "✅ Good savings rate — meeting the 15% guideline."
+        sr_color, sr_msg = "#1E5C3A", "✅ Good savings rate — meeting the 15% research-based guideline."
     elif sr >= 10:
         sr_color, sr_msg = "#7A4F00", "⚠️ Moderate savings rate. Aim for 15–20% for long-term security."
     elif surplus > 0:
@@ -1130,23 +1283,27 @@ def step_cashflow():
         sr_color, sr_msg = "#8B1A1A", "🚨 Expenses exceed income. Addressing this gap is the top priority."
 
     st.markdown(f"""
-    <div class="card" style="border-left:4px solid {sr_color};margin-top:1.5rem;">
+    <div class="card" style="border-left:5px solid {sr_color};margin-top:1.5rem;">
         <div class="kpi-grid">
             <div class="kpi-box"><div class="label">Net Income</div><div class="value">{fmt_dollar(income)}/mo</div></div>
             <div class="kpi-box"><div class="label">Total Expenses</div><div class="value" style="color:#8B1A1A">{fmt_dollar(total_exp)}/mo</div></div>
             <div class="kpi-box"><div class="label">Monthly Surplus</div><div class="value" style="color:{sr_color}">{fmt_dollar(surplus)}</div></div>
             <div class="kpi-box"><div class="label">Savings Rate</div><div class="value" style="color:{sr_color}">{sr:.1f}%</div></div>
         </div>
-        <p style="margin-top:1rem;font-size:0.88rem;">{sr_msg}</p>
+        <p style="margin-top:1rem;font-size:0.9rem;color:#1A0A2E;font-weight:500;">{sr_msg}</p>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("""
     <div class="citation">
-        <strong>Savings rate guideline:</strong> Financial planning research consistently recommends saving at least
-        15% of gross income (including employer retirement contributions) to maintain a stable standard of living
-        through retirement. Source: Pfau, W. D. (2011). Safe savings rates: A new approach to retirement planning
-        over the life cycle. <em>Journal of Financial Planning, 24</em>(5), 42–50.
+        <strong>Sources:</strong><br>
+        U.S. Bureau of Labor Statistics. (2023). <em>Consumer Expenditure Survey, 2022.</em>
+        <a href="https://www.bls.gov/cex/">https://www.bls.gov/cex/</a>
+        (Table 1101: Regional expenditure means, annual data divided by 12 for monthly estimates.
+        All figures are U.S.-based averages across consumer units and income levels.)<br>
+        Pfau, W. D. (2011). Safe savings rates: A new approach to retirement planning over the life cycle.
+        <em>Journal of Financial Planning, 24</em>(5), 42–50.
+        (15% savings rate guideline)
     </div>
     """, unsafe_allow_html=True)
 
@@ -1715,7 +1872,7 @@ def step_action_plan():
 # ─────────────────────────────────────────────
 STEP_FNS = [
     step_welcome, step_demographics, step_goals, step_cfpb,
-    step_confidence, step_networth, step_cashflow,
+    step_cfpb_score, step_confidence, step_networth, step_cashflow,
     step_emergency, step_retirement, step_action_plan,
 ]
 
