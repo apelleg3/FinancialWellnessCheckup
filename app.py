@@ -2115,6 +2115,19 @@ def generate_pdf(data: dict) -> bytes:
         "Lusardi &amp; Mitchell (2014); Madrian &amp; Shea (2001); BLS Consumer Expenditure Survey (2022).",
         S["cite"]
     ))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph(
+        "Built by <font color='#7C3AED'>Andrea Pellegrini</font> "
+        "(andreapellegrini.info) with assistance from Claude Sonnet 4.6 (Anthropic). "
+        "Pellegrini, A. (2025). <i>Financial Wellness Checkup</i> [Interactive assessment tool]. "
+        "Retrieved from financialwellnesscheckup.streamlit.app",
+        S["cite"]
+    ))
+    story.append(Paragraph(
+        "Return to the tool anytime to update your goals and financial outlook: "
+        "financialwellnesscheckup.streamlit.app",
+        ps("tool_url", fontSize=7.5, textColor=colors.HexColor("#7C3AED"), leading=10)
+    ))
 
     doc.build(story)
     return buf.getvalue()
@@ -2444,10 +2457,15 @@ def step_action_plan():
     st.markdown("""
     <div class="card card-purple" style="text-align:center;margin-top:1.5rem;">
         <strong style="font-size:1.05rem;">Financial wellness is a journey, not a destination.</strong><br>
-        <span style="font-size:0.88rem;color:#6d28d9;">
+        <span style="font-size:0.88rem;color:#C4B5FD;">
         Small, consistent improvements compound over time — in your savings and in your well-being.
         Re-take this assessment quarterly to track your progress.
         </span>
+        <div style="margin-top:0.75rem;font-size:0.78rem;color:#A89BC2;">
+            🔗 Return anytime at
+            <a href="https://financialwellnesscheckup.streamlit.app/" target="_blank"
+               style="color:#C084FC;font-weight:600;">financialwellnesscheckup.streamlit.app</a>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -2462,7 +2480,13 @@ def step_action_plan():
         <a href="https://www.nefe.org/research">https://www.nefe.org/research</a><br>
         Choi, J. J., Laibson, D., Madrian, B. C., &amp; Metrick, A. (2004). For better or for worse: Default effects and
         401(k) savings behavior. In D. Wise (Ed.), <em>Perspectives on the Economics of Aging</em> (pp. 81–126). University of Chicago Press.
-        <a href="https://doi.org/10.7208/chicago/9780226903286.001.0001">https://doi.org/10.7208/chicago/9780226903286.001.0001</a>
+        <a href="https://doi.org/10.7208/chicago/9780226903286.001.0001">https://doi.org/10.7208/chicago/9780226903286.001.0001</a><br><br>
+        <strong>Tool citation:</strong>
+        Pellegrini, A. (2025). <em>Financial Wellness Checkup</em> [Interactive assessment tool].
+        Built with assistance from Claude Sonnet 4.6 (Anthropic).
+        <a href="https://financialwellnesscheckup.streamlit.app/" style="color:#C084FC;">
+        https://financialwellnesscheckup.streamlit.app/</a> ·
+        Developer: <a href="https://andreapellegrini.info" style="color:#C084FC;">andreapellegrini.info</a>
     </div>
     """, unsafe_allow_html=True)
 
