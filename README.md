@@ -28,37 +28,6 @@ This tool combines **subjective well-being** (how you feel about money) with **o
 
 ---
 
-## 🚀 Deployment
-
-### Option 1: Streamlit Community Cloud (Free, Recommended)
-
-1. **Fork or push this repo to GitHub**
-2. Go to [share.streamlit.io](https://share.streamlit.io)
-3. Connect your GitHub account
-4. Select this repo, set the main file to `app.py`
-5. Click **Deploy** — your app will be live in ~2 minutes
-
-### Option 2: Run Locally
-
-```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the app
-streamlit run app.py
-```
-
-App will open at `http://localhost:8501`
-
-### Option 3: Deploy to Heroku / Railway / Render
-
-Add a `Procfile`:
-```
-web: streamlit run app.py --server.port=$PORT --server.address=0.0.0.0
-```
-
----
-
 ## 📁 File Structure
 
 ```
@@ -86,4 +55,3 @@ All benchmarks and recommendations cite peer-reviewed research and government da
 - Consumer Financial Protection Bureau. (2017). *CFPB Financial Well-Being Scale.* https://www.consumerfinance.gov/data-research/research-reports/financial-well-being-scale/
 - Fidelity Investments. (2024). *How much do I need to retire?* https://www.fidelity.com/viewpoints/retirement/how-much-do-i-need-to-retire
 - Lusardi, A., & Mitchell, O. S. (2014). The economic importance of financial literacy. *Journal of Economic Literature, 52*(1), 5–44.
-- Madrian, B. C., & Shea, D. F. (2001). The power of suggestion. *Quarterly Journal of Economics, 116*(4), 1149–1187.
