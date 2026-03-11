@@ -2431,26 +2431,13 @@ def step_action_plan():
 
     try:
         pdf_bytes = generate_pdf(pdf_data)
-        col_pdf, col_print = st.columns([1, 1])
-        with col_pdf:
-            st.download_button(
+        st.download_button(
                 label="⬇️ Download PDF Report",
                 data=pdf_bytes,
                 file_name=f"financial-wellness-{date.today().isoformat()}.pdf",
                 mime="application/pdf",
                 use_container_width=True,
             )
-        with col_print:
-            # Browser print via a hidden iframe trick
-            st.markdown("""
-            <button onclick="window.print()"
-                style="width:100%;padding:0.5rem 1rem;background:linear-gradient(135deg,#2D1B5E,#5B2FA0);
-                color:#F0EBFF;border:none;border-radius:10px;font-size:0.95rem;font-weight:600;
-                cursor:pointer;font-family:'DM Sans',sans-serif;">
-                🖨️ Print / Save as PDF
-            </button>
-            """, unsafe_allow_html=True)
-            st.caption("Use your browser's Print → 'Save as PDF' option for best results.")
     except Exception as e:
         st.warning(f"PDF generation unavailable: {e}. Please take a screenshot to save your results.")
 
