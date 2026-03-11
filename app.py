@@ -181,9 +181,10 @@ div[data-testid="column"]:last-child .stButton > button {
 DEFAULTS = {
     "step": 0,
     # Demographics
-    "age": 35, "salary": 60000, "ret_age": 67, "region": "National Average",
+    "age": 35, "salary": 60000, "ret_age": 67, "region": "U.S. National Average",
     # Goals
     "goals": [],
+    "custom_goals": [],  # list of {"text": str, "horizon": str}
     # CFPB Well-Being (10 items, stored as score values with _score suffix)
     # Default: middle option for each item
     "cfpb": {f"q{i+1}_score": v[2] for i, (_, _, v) in enumerate([
@@ -442,11 +443,12 @@ CFPB_ITEMS = [
 # ─────────────────────────────────────────────
 BLS_MONTHLY = {
     # (shelter/mortgage, utilities, transport, groceries, dining_out, healthcare, entertainment, personal_care)
-    "National Average": (1208, 385, 1025, 475, 303, 488, 288, 64),
-    "Northeast":        (1452, 420, 1010, 540, 335, 460, 300, 72),
-    "Midwest":          (1038, 418, 1058, 452, 268, 528, 268, 60),
-    "South":            (1095, 408, 1082, 445, 288, 498, 262, 58),
-    "West":             (1548, 378, 1092, 495, 355, 510, 338, 74),
+    # Source: BLS Consumer Expenditure Survey 2022, annual regional means ÷ 12
+    "U.S. National Average": (1208, 385, 1025, 475, 303, 488, 288, 64),
+    "U.S. Northeast":        (1452, 420, 1010, 540, 335, 460, 300, 72),
+    "U.S. Midwest":          (1038, 418, 1058, 452, 268, 528, 268, 60),
+    "U.S. South":            (1095, 408, 1082, 445, 288, 498, 262, 58),
+    "U.S. West":             (1548, 378, 1092, 495, 355, 510, 338, 74),
 }
 
 def bls_hint(region, field):
@@ -605,10 +607,29 @@ def step_demographics():
                               max(age + 1, ss("ret_age")), step=1)
     ss_set("ret_age", ret_age)
 
-    region = st.selectbox("Region",
-                          ["National Average", "Northeast", "Midwest", "South", "West"],
-                          index=["National Average","Northeast","Midwest","South","West"].index(ss("region")))
+    REGIONS = [
+        "U.S. National Average",
+        "U.S. Northeast",
+        "U.S. Midwest",
+        "U.S. South",
+        "U.S. West",
+        "Outside the United States",
+    ]
+    current_region = ss("region")
+    if current_region not in REGIONS:
+        current_region = "U.S. National Average"
+
+    region = st.selectbox(
+        "U.S. Region *(used to show BLS spending averages in cash flow step)*",
+        REGIONS,
+        index=REGIONS.index(current_region),
+        help="All benchmarks and spending reference data in this tool are drawn from U.S. federal surveys. "
+             "If you are outside the United States, spending hints will be hidden — all other sections still apply."
+    )
     ss_set("region", region)
+
+    if region == "Outside the United States":
+        st.info("📌 Note: Spending reference data (BLS Consumer Expenditure Survey) is U.S.-only and will be hidden in the Cash Flow step. All other benchmarks — net worth, retirement savings, and CFPB well-being norms — are also U.S.-based and may not reflect your country's context.")
 
     yrs = ret_age - age
     mult = fidelity_multiple(age)
@@ -650,8 +671,74 @@ def step_goals():
             else:
                 current_goals.discard(item)
 
+    # ── Custom "Other" goals ─────────────────────────────────────────────────
+    st.markdown("**Other / Custom Goals**")
+    st.caption("Type in any goal not listed above. Select the time horizon and it will be included in your plan.")
+
+    custom_goals = ss("custom_goals")  # list of {"text": str, "horizon": str}
+
+    HORIZONS = ["Short-term (0–2 yrs)", "Medium-term (3–5 yrs)", "Long-term (5+ yrs)"]
+
+    # Display existing custom goals with delete option
+    kept_customs = []
+    for i, cg in enumerate(custom_goals):
+        col_txt, col_hz, col_del = st.columns([3, 2, 1])
+        with col_txt:
+            new_text = st.text_input(
+                f"Custom goal {i+1}",
+                value=cg["text"],
+                key=f"custom_goal_text_{i}",
+                label_visibility="collapsed",
+                placeholder="Describe your goal…"
+            )
+        with col_hz:
+            hz_idx = HORIZONS.index(cg["horizon"]) if cg["horizon"] in HORIZONS else 0
+            new_hz = st.selectbox(
+                f"Horizon {i+1}",
+                HORIZONS,
+                index=hz_idx,
+                key=f"custom_goal_hz_{i}",
+                label_visibility="collapsed"
+            )
+        with col_del:
+            st.markdown("<div style='margin-top:0.35rem'></div>", unsafe_allow_html=True)
+            if st.button("✕", key=f"del_custom_{i}", help="Remove this goal"):
+                continue  # skip = delete
+        if new_text.strip():
+            kept_customs.append({"text": new_text.strip(), "horizon": new_hz})
+
+    # Add new custom goal row
+    col_new, col_hz_new, col_add = st.columns([3, 2, 1])
+    with col_new:
+        new_goal_text = st.text_input(
+            "New custom goal",
+            value="",
+            key="new_custom_goal_text",
+            label_visibility="collapsed",
+            placeholder="Type a new goal here…"
+        )
+    with col_hz_new:
+        new_goal_hz = st.selectbox(
+            "New goal horizon",
+            HORIZONS,
+            key="new_custom_goal_hz",
+            label_visibility="collapsed"
+        )
+    with col_add:
+        st.markdown("<div style='margin-top:0.35rem'></div>", unsafe_allow_html=True)
+        if st.button("＋ Add", key="add_custom_goal"):
+            if new_goal_text.strip():
+                kept_customs.append({"text": new_goal_text.strip(), "horizon": new_goal_hz})
+                st.rerun()
+
+    ss_set("custom_goals", kept_customs)
+
+    # Combine preset + custom goals for count display
+    all_custom_labels = [f"{cg['text']} ({cg['horizon']})" for cg in kept_customs]
+    combined = current_goals | set(all_custom_labels)
     ss_set("goals", list(current_goals))
-    n = len(current_goals)
+
+    n = len(current_goals) + len(kept_customs)
 
     if n == 0:
         st.info("Select at least one goal to continue.")
@@ -664,22 +751,24 @@ def step_goals():
         </div>
         """, unsafe_allow_html=True)
     else:
+        all_display = sorted(current_goals) + [f"📝 {cg['text']} <em>({cg['horizon']})</em>" for cg in kept_customs]
+        items_html = "".join(f"<li>{g}</li>" for g in all_display)
         st.markdown(f"""
         <div class="card card-green">
             ✅ <strong>{n} goal{'s' if n>1 else ''} selected</strong> — great focus!
             <ul style="margin:0.4rem 0 0;padding-left:1.2rem;font-size:0.88rem;color:#4ADE80;">
-            {"".join(f"<li>{g}</li>" for g in sorted(current_goals))}
+            {items_html}
             </ul>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("""
     <div class="citation">
-        <strong>Sources:</strong><br>
-        Sin, R., Murphy, R. O., &amp; Lamas, S. (2019). Goals-based financial planning: How simple lists can overcome
-        cognitive blind spots. <em>Journal of Financial Planning, 32</em>(7), 32–43.<br>
+        Sin, R., Murphy, R. O., &amp; Lamas, S. (2019). Goals-based financial planning: How simple lists
+        can overcome cognitive blind spots. <em>Journal of Financial Planning, 32</em>(7), 32–43.<br>
         Fisher, P. J., &amp; Montalto, C. P. (2010). Effect of saving motives and horizon on saving behaviors.
-        <em>Journal of Economic Psychology, 31</em>(1), 92–105. <a href="https://doi.org/10.1016/j.joep.2009.10.001">https://doi.org/10.1016/j.joep.2009.10.001</a>
+        <em>Journal of Economic Psychology, 31</em>(1), 92–105.
+        <a href="https://doi.org/10.1016/j.joep.2009.10.001">https://doi.org/10.1016/j.joep.2009.10.001</a>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1117,20 +1206,36 @@ def step_cashflow():
     st.markdown('<p class="step-subtitle">Understanding where your money goes is the foundation of financial planning.</p>', unsafe_allow_html=True)
 
     region = ss("region")
-    bls = BLS_MONTHLY.get(region, BLS_MONTHLY["National Average"])
+    outside_us = (region == "Outside the United States")
+    bls = BLS_MONTHLY.get(region, BLS_MONTHLY["U.S. National Average"])
     # indices: shelter, utilities, transport, groceries, dining_out, healthcare, entertainment, personal_care
 
-    st.markdown(f"""
-    <div class="card card-blue">
-        <strong>Reference figures: BLS Consumer Expenditure Survey 2022 — {region}</strong><br>
-        <span style="font-size:0.85rem;color:#D4C8F0;">
-        The dollar hints below show average monthly spending from the U.S. Bureau of Labor Statistics
-        Consumer Expenditure Survey 2022 for the <strong>{region}</strong> region of the United States.
-        These are <em>averages across all income levels</em> — your situation may differ.
-        All data are U.S.-based and expressed in 2022 dollars.
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
+    if outside_us:
+        st.markdown("""
+        <div class="card card-slate">
+            <strong>📌 Outside the U.S.</strong><br>
+            <span style="font-size:0.85rem;color:#D4C8F0;">
+            BLS spending reference data is U.S.-only and has been hidden. Enter your actual expenses below.
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown(f"""
+        <div class="card card-blue">
+            <strong>Reference figures: BLS Consumer Expenditure Survey 2022 — {region}</strong><br>
+            <span style="font-size:0.85rem;color:#D4C8F0;">
+            The dollar hints below show average monthly spending from the U.S. Bureau of Labor Statistics
+            Consumer Expenditure Survey 2022 for the <strong>{region}</strong> region.
+            These are <em>averages across all income levels</em> — your situation may differ.
+            All data are expressed in 2022 U.S. dollars.
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    def bls_md(text):
+        """Only render BLS hint if user is in U.S."""
+        if not outside_us:
+            st.markdown(f'<div class="bls-hint">{text}</div>', unsafe_allow_html=True)
 
     income = st.number_input("Monthly net (take-home) income after taxes ($)",
                              0, 100_000, ss("income_net"), step=100, format="%d")
@@ -1141,13 +1246,13 @@ def step_cashflow():
     exp = ss("exp")
 
     st.markdown("#### Fixed Expenses *(same each month)*")
-    st.markdown(f'<div class="bls-hint">BLS 2022 avg — Housing/shelter: ~${bls[0]:,}/mo · Utilities: ~${bls[1]:,}/mo ({region})</div>', unsafe_allow_html=True)
+    bls_md(f"BLS 2022 avg — Housing/shelter: ~${bls[0]:,}/mo · Utilities: ~${bls[1]:,}/mo ({region})")
     exp["housing"]  = st.number_input("Housing (rent or mortgage payment only)",
         0, 20_000, exp.get("housing", 0), step=50, format="%d", key="exp_housing")
     exp["utilities"] = st.number_input("Utilities (electric, gas, water, internet, phone)",
         0, 3_000, exp.get("utilities", 0), step=25, format="%d", key="exp_utilities")
 
-    st.markdown(f'<div class="bls-hint">BLS 2022 avg — Transportation: ~${bls[2]:,}/mo ({region}) — includes vehicle payments, gas, auto insurance, maintenance</div>', unsafe_allow_html=True)
+    bls_md(f"BLS 2022 avg — Transportation: ~${bls[2]:,}/mo ({region}) — includes vehicle payments, gas, auto insurance, maintenance")
     exp["transport"] = st.number_input("Transportation (car payment, gas, auto insurance, transit)",
         0, 10_000, exp.get("transport", 0), step=25, format="%d", key="exp_transport")
 
@@ -1157,13 +1262,13 @@ def step_cashflow():
         0, 10_000, exp.get("debt_min", 0), step=25, format="%d", key="exp_debt_min")
 
     st.markdown("#### Flexible Expenses *(variable each month)*")
-    st.markdown(f'<div class="bls-hint">BLS 2022 avg — Groceries: ~${bls[3]:,}/mo · Dining out: ~${bls[4]:,}/mo ({region})</div>', unsafe_allow_html=True)
+    bls_md(f"BLS 2022 avg — Groceries: ~${bls[3]:,}/mo · Dining out: ~${bls[4]:,}/mo ({region})")
     exp["groceries"]     = st.number_input("Groceries & household supplies",
         0, 5_000, exp.get("groceries", 0), step=25, format="%d", key="exp_groceries")
     exp["entertainment"] = st.number_input("Dining out & entertainment",
         0, 5_000, exp.get("entertainment", 0), step=25, format="%d", key="exp_entertainment")
 
-    st.markdown(f'<div class="bls-hint">BLS 2022 avg — Healthcare out-of-pocket: ~${bls[5]:,}/mo · Entertainment/recreation: ~${bls[6]:,}/mo · Personal care: ~${bls[7]:,}/mo ({region})</div>', unsafe_allow_html=True)
+    bls_md(f"BLS 2022 avg — Healthcare out-of-pocket: ~${bls[5]:,}/mo · Recreation: ~${bls[6]:,}/mo · Personal care: ~${bls[7]:,}/mo ({region})")
     exp["personal"]      = st.number_input("Personal care & clothing",
         0, 3_000, exp.get("personal", 0), step=10, format="%d", key="exp_personal")
     exp["other_flex"]    = st.number_input("Other variable expenses (subscriptions, childcare, pet care, etc.)",
@@ -1538,9 +1643,12 @@ def step_action_plan():
     </div>
     """, unsafe_allow_html=True)
 
-    if goals:
+    if goals or ss("custom_goals"):
         st.markdown("#### 🎯 Your Selected Goals")
-        goal_html = "".join(f"<li>{g}</li>" for g in goals[:5])
+        all_goal_items = list(goals[:5])
+        for cg in ss("custom_goals")[:3]:
+            all_goal_items.append(f"📝 {cg['text']} ({cg['horizon']})")
+        goal_html = "".join(f"<li>{g}</li>" for g in all_goal_items)
         st.markdown(f"""
         <div class="card card-amber">
             <ul style="margin:0;padding-left:1.2rem;font-size:0.9rem;color:#FCD34D;">{goal_html}</ul>
