@@ -455,7 +455,7 @@ def bls_hint(region, field):
     """Return a BLS average monthly dollar amount for the given field."""
     keys = ["housing", "utilities", "transport", "groceries",
             "dining_out", "healthcare", "entertainment", "personal_care"]
-    vals = BLS_MONTHLY.get(region, BLS_MONTHLY["National Average"])
+    vals = BLS_MONTHLY.get(region, BLS_MONTHLY["U.S. National Average"])
     if field in keys:
         amt = vals[keys.index(field)]
         return f'<div class="bls-hint">BLS national avg (2022): ~${amt:,}/mo for {region}</div>'
@@ -613,23 +613,29 @@ def step_demographics():
         "U.S. Midwest",
         "U.S. South",
         "U.S. West",
-        "Outside the United States",
+        "Outside the U.S. (skip spending benchmarks)",
     ]
     current_region = ss("region")
     if current_region not in REGIONS:
-        current_region = "U.S. National Average"
+        # handle old "Outside the United States" key
+        if "Outside" in current_region:
+            current_region = "Outside the U.S. (skip spending benchmarks)"
+        else:
+            current_region = "U.S. National Average"
 
     region = st.selectbox(
-        "U.S. Region *(used to show BLS spending averages in cash flow step)*",
+        "Region (United States) — select 'Outside the U.S.' to skip spending benchmarks",
         REGIONS,
         index=REGIONS.index(current_region),
-        help="All benchmarks and spending reference data in this tool are drawn from U.S. federal surveys. "
-             "If you are outside the United States, spending hints will be hidden — all other sections still apply."
+        help="All benchmark and spending reference data in this tool come from U.S. federal surveys "
+             "(BLS Consumer Expenditure Survey, Federal Reserve SCF, CFPB). "
+             "If you are outside the United States, select 'Outside the U.S.' — "
+             "spending hints will be hidden and you can still complete all other sections."
     )
     ss_set("region", region)
 
-    if region == "Outside the United States":
-        st.info("📌 Note: Spending reference data (BLS Consumer Expenditure Survey) is U.S.-only and will be hidden in the Cash Flow step. All other benchmarks — net worth, retirement savings, and CFPB well-being norms — are also U.S.-based and may not reflect your country's context.")
+    if region.startswith("Outside"):
+        st.warning("📌 **Outside the U.S. selected.** BLS spending reference figures will be hidden in the Cash Flow step. All other sections (net worth, retirement, well-being) are still available, though the benchmarks are U.S.-based and may not reflect your country's context.")
 
     yrs = ret_age - age
     mult = fidelity_multiple(age)
@@ -1206,7 +1212,7 @@ def step_cashflow():
     st.markdown('<p class="step-subtitle">Understanding where your money goes is the foundation of financial planning.</p>', unsafe_allow_html=True)
 
     region = ss("region")
-    outside_us = (region == "Outside the United States")
+    outside_us = region.startswith("Outside")
     bls = BLS_MONTHLY.get(region, BLS_MONTHLY["U.S. National Average"])
     # indices: shelter, utilities, transport, groceries, dining_out, healthcare, entertainment, personal_care
 
