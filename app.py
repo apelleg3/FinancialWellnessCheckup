@@ -1496,7 +1496,7 @@ def step_emergency():
     """, unsafe_allow_html=True)
 
     # Progress bar
-    metric_bar("Progress toward 6-month goal", min(months_covered, 6), 6,
+    metric_bar("Progress toward 6-month goal ", min(months_covered, 6), 6,
                color="#4ADE80" if months_covered >= 6 else "#FCD34D" if months_covered >= 3 else "#F87171",
                suffix=" months")
 
