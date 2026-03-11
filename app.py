@@ -214,6 +214,66 @@ div[data-testid="column"]:last-child .stButton > button {
     margin-bottom:0.75rem;
     border-left:3px solid #7C3AED;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDE
+   When the user's browser / OS is in light mode, Streamlit may render a
+   light background. These rules force our dark palette onto every surface
+   so text always has sufficient contrast regardless of system settings.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (prefers-color-scheme: light) {
+    /* Page backgrounds */
+    [data-testid="stAppViewContainer"],
+    [data-testid="stMain"],
+    section[data-testid="stMain"] > div,
+    .main, .block-container,
+    html, body {
+        background-color: #0E0A1E !important;
+        color: #F0EBFF !important;
+    }
+    /* All plain text */
+    p, span, li, td, th, label, div,
+    [data-testid="stMarkdownContainer"] p,
+    [data-testid="stMarkdownContainer"] li,
+    [data-testid="stMarkdownContainer"] span {
+        color: #D4C8F0 !important;
+    }
+    /* Headings */
+    h1, h2, h3, h4, .step-title,
+    [data-testid="stMarkdownContainer"] h1,
+    [data-testid="stMarkdownContainer"] h2,
+    [data-testid="stMarkdownContainer"] h3,
+    [data-testid="stMarkdownContainer"] h4 {
+        color: #F0EBFF !important;
+    }
+    /* Input widgets */
+    [data-testid="stNumberInput"] input,
+    [data-testid="stTextInput"] input,
+    [data-baseweb="input"] input,
+    [data-baseweb="select"] > div {
+        background-color: #1A1033 !important;
+        color: #F0EBFF !important;
+        border-color: #3D2B6B !important;
+    }
+    /* Radio / checkbox labels */
+    [data-testid="stRadio"] label span,
+    [data-testid="stCheckbox"] label span {
+        color: #D4C8F0 !important;
+    }
+    /* Selectbox text */
+    [data-baseweb="select"] * { color: #F0EBFF !important; background-color: #1A1033 !important; }
+    /* Captions */
+    [data-testid="stCaptionContainer"] p,
+    .stCaption { color: #A89BC2 !important; }
+    /* Number input stepper buttons */
+    [data-testid="stNumberInput"] button { color: #C084FC !important; }
+    /* Slider */
+    [data-testid="stSlider"] [data-baseweb="slider"] div { background: #3D2B6B !important; }
+    /* Info / warning / error boxes */
+    [data-testid="stAlert"] { background-color: #1A1033 !important; color: #D4C8F0 !important; }
+    /* Our custom HTML elements — these have explicit background/color so they
+       already work in both modes; no override needed for .card, .kpi-box etc. */
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -611,7 +671,7 @@ def step_welcome():
         st.markdown("""
         <div class="card card-amber">
             <strong>⏱ Time required</strong><br>
-            <span style="font-size:0.88rem;color:#FCD34D;">15–30 minutes</span>
+            <span style="font-size:0.88rem;color:#FCD34D;">10–15 minutes</span>
         </div>
         """, unsafe_allow_html=True)
     with col2:
@@ -1259,10 +1319,11 @@ def step_networth():
 
     ss_set("nw", nw)
     assets, liabs, total = net_worth()
-    bracket = age_bracket(ss("age"))
+    age    = ss("age")
+    bracket = age_bracket(age)
     bench_med, bench_p75 = NW_BENCH[bracket]
 
-    nw_color = "#4ADE80" if total > bench_med else "#FCD34D"
+    nw_color = "#4ADE80" if total > bench_med else "#FCD34D" if total >= 0 else "#F87171"
     tier = ("Top 25% for your age group" if total > bench_p75
             else "Above median for your age group" if total > bench_med
             else "Below median for your age group")
@@ -1293,6 +1354,67 @@ def step_networth():
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    # ── Under-25 / negative net worth context ─────────────────────────────────
+    if age < 25 or total < 0:
+        if age < 25 and total < 0:
+            headline = "A negative net worth is very common and expected at your age."
+            body = (
+                "Most people under 25 have more debt than assets — student loans, car payments, "
+                "and credit cards taken on before income catches up. This is not a crisis; "
+                "it is a starting point. <strong>What matters most right now is the trajectory, "
+                "not the number.</strong> If your net worth is improving each year — even slowly — "
+                "you are doing the right things. Use this tool quarterly to track your progress."
+            )
+            tips = [
+                "Avoid taking on new high-interest debt (credit cards > 20% APR).",
+                "Even $25–50/month into a savings account builds the habit that compounds later.",
+                "If you have student loans, confirm your repayment plan and income-driven options.",
+                "Your biggest asset right now is time — compound interest works most powerfully over long horizons.",
+            ]
+        elif age < 25:
+            headline = "You're off to a strong start for your age."
+            body = (
+                "Having a positive net worth before age 25 puts you ahead of most of your peers. "
+                "Many people in this age group are still working through student loans or early-career "
+                "expenses. Keep building on this foundation — the habits you establish now "
+                "will compound significantly over the next few decades."
+            )
+            tips = [
+                "Start or increase retirement contributions — time is your greatest asset.",
+                "Build your emergency fund to 3 months before investing in taxable accounts.",
+                "Avoid lifestyle inflation as your income grows.",
+            ]
+        else:
+            headline = "A negative net worth is something to track — but not to despair about."
+            body = (
+                "Many people carry negative net worth at various life stages, particularly when "
+                "student loans, mortgages, or unexpected expenses are part of the picture. "
+                "<strong>The direction of change matters more than the current number.</strong> "
+                "If you reduce debt and grow assets consistently, the trajectory will turn positive. "
+                "Focus on the highest-interest debt first (typically credit cards), then build "
+                "your emergency fund, then address longer-term goals."
+            )
+            tips = [
+                "Track your net worth quarterly — even small improvements are meaningful progress.",
+                "Prioritize eliminating high-interest debt (credit cards) before building investments.",
+                "A fee-only financial counselor (NFCC.org) can help if debt feels overwhelming.",
+            ]
+
+        tips_html = "".join(f"<li style='margin-bottom:4px'>{t}</li>" for t in tips)
+        st.markdown(f"""
+        <div class="card card-blue" style="margin-top:0.5rem;">
+            <div style="font-size:0.95rem;font-weight:700;color:#F0EBFF;margin-bottom:0.5rem;">
+                💡 {headline}
+            </div>
+            <div style="font-size:0.88rem;color:#D4C8F0;line-height:1.6;margin-bottom:0.75rem;">
+                {body}
+            </div>
+            <ul style="font-size:0.85rem;color:#C4B5FD;margin:0;padding-left:1.3rem;line-height:1.7;">
+                {tips_html}
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("**Net Worth Benchmarks by Age — Federal Reserve SCF 2022**")
     rows = ""
