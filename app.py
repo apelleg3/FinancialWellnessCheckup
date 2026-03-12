@@ -663,7 +663,7 @@ def step_welcome():
             <li>Retirement readiness projection</li>
             <li>Personalized, evidence-based action plan</li>
         </ul>
-        <span style="font-size:0.88rem;color:#FCD34D;"><i>Gathering financial information prior to starting will reduce completion time.</i></span>
+        <p><i>Gathering financial information prior to starting will reduce completion time.</i></p>
     </div>
     """, unsafe_allow_html=True)
 
