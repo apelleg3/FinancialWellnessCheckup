@@ -672,6 +672,7 @@ def step_welcome():
         <div class="card card-amber">
             <strong>⏱ Time required</strong><br>
             <span style="font-size:0.88rem;color:#FCD34D;">10–15 minutes</span>
+            <span style="font-size:0.88rem;color:#FCD34D;"><i>Gathering financial info prior to starting will reduce completion time</i></span>
         </div>
         """, unsafe_allow_html=True)
     with col2:
